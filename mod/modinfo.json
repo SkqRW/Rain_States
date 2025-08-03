@@ -1,9 +1,9 @@
 {
   "id": "skeq.rainstates",
   "name": "Rain States",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "authors": "Skeq",
   "description": "Put custom states to you rregion :D",
-  "requirements": [],
-  "requirements_names": []
+  "requirements": ["regionkit"],
+  "requirements_names": ["RegionKit"]
 }

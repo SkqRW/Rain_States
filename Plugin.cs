@@ -1,6 +1,8 @@
-﻿using System.Security;
+﻿using System;
+using System.Security;
 using System.Security.Permissions;
 using BepInEx;
+
 
 #pragma warning disable CS0618
 
@@ -17,17 +19,14 @@ public partial class Plugin : BaseUnityPlugin
     public const string VER = "0.0.2";
     private void OnEnable()
     {
-        JsonGet.PaletteManager.LoadPalettes();
-        RoomChange.PaletteDrive.Init();
-        DevTools.Init();
-        //On.RainWorld.OnModsInit += RainWorldOnOnModsInit;
+        
+        On.RainWorld.OnModsInit += RainWorldOnOnModsInit;
     }
 
     private void OnDisable()
     {
     }
 
-    /* Do this when the mod is finish?
     private bool IsInit;
     private void RainWorldOnOnModsInit(On.RainWorld.orig_OnModsInit orig, RainWorld self)
     {
@@ -38,14 +37,15 @@ public partial class Plugin : BaseUnityPlugin
         {
             IsInit = true;
 
-            //Your hooks go here
-            
+            JsonGet.PaletteManager.LoadPalettes();
+            RoomChange.PaletteDrive.Init();
+            DevTools.Init();
+
         }
         catch (Exception ex)
         {
             Logger.LogError(ex);
         }
     }
-    */
 
 }
