@@ -4,7 +4,7 @@ using System.Security.Permissions;
 using UnityEngine;
 using RWCustom;
 using BepInEx;
-using PDebug = UnityEngine.Debug;
+using PDebug = Plugin.DevTools;
 using System.Drawing;
 using System.Diagnostics;
 using RKMFP = RegionKit.API.MoreFadePalettes;
@@ -99,7 +99,7 @@ public partial class DevTools
     private static void PlayerGraphics_DrawSprites(On.PlayerGraphics.orig_DrawSprites orig, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
     {
         orig(self, sLeaser, rCam, timeStacker, camPos);
-        sLeaser.sprites[2].color = UnityEngine.Color.red;
+        sLeaser.sprites[2].color = UnityEngine.Color.blue;
     }
     //Regresive count in seconds
     private static void SetDevTimer(int seconds)

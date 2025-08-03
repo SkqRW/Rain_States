@@ -6,6 +6,8 @@ using RWCustom;
 using BepInEx;
 using Debug = UnityEngine.Debug;
 using DevInterface;
+using IL.DevInterface;
+using PDebug = Plugin.DevTools;
 
 #pragma warning disable CS0618
 
@@ -19,9 +21,11 @@ public partial class Plugin : BaseUnityPlugin
 {
     public const string ID = "skeq.rainstates";
     public const string NAME = "Rain States";
-    public const string VER = "0.0.1";
+    public const string VER = "0.0.2";
     private void OnEnable()
     {
+        PaletteManager.LoadPalettes();
+        PaletteDrive.Init();
         DevTools.Init();
         //On.RainWorld.OnModsInit += RainWorldOnOnModsInit;
     }
