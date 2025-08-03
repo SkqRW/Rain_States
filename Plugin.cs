@@ -1,13 +1,6 @@
-﻿using System;
-using System.Security;
+﻿using System.Security;
 using System.Security.Permissions;
-using UnityEngine;
-using RWCustom;
 using BepInEx;
-using Debug = UnityEngine.Debug;
-using DevInterface;
-using IL.DevInterface;
-using PDebug = Plugin.DevTools;
 
 #pragma warning disable CS0618
 
@@ -24,8 +17,8 @@ public partial class Plugin : BaseUnityPlugin
     public const string VER = "0.0.2";
     private void OnEnable()
     {
-        PaletteManager.LoadPalettes();
-        PaletteDrive.Init();
+        JsonGet.PaletteManager.LoadPalettes();
+        RoomChange.PaletteDrive.Init();
         DevTools.Init();
         //On.RainWorld.OnModsInit += RainWorldOnOnModsInit;
     }

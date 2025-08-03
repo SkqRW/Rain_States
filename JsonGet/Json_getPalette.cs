@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
-using PDebug = Plugin.DevTools;
 
-namespace Plugin;
+namespace JsonGet;
 
 public class PaletteInfo
 {

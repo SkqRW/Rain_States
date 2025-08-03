@@ -1,13 +1,5 @@
-﻿using System;
-using System.Security;
-using System.Security.Permissions;
-using UnityEngine;
-using RWCustom;
-using BepInEx;
-using PDebug = Plugin.DevTools;
-using System.Drawing;
-using System.Diagnostics;
-using RKMFP = RegionKit.API.MoreFadePalettes;
+﻿
+global using UnityEngine;
 
 
 
@@ -35,7 +27,7 @@ public partial class DevTools
         orig(self, eu);
         if (notify)
         {
-            PDebug.Log("Init dev tools palette");
+            PDEBUG.Log("Init dev tools palette");
             notify = false;
         }
 
@@ -47,16 +39,16 @@ public partial class DevTools
 
         if (Input.GetKey(KeyCode.P))
         {
-            PDebug.Log("Start testing dinamic palette");
+            PDEBUG.Log("Start testing dinamic palette");
 
             pal = ((pal + 1) % 3);
             RainCycle r = self.room.world.rainCycle;
 
             var screenCount = self.room.cameraPositions.Length;
-            PDebug.Log($"change palette to {pal + 1000}");
+            PDEBUG.Log($"change palette to {pal + 1000}");
             self.room.roomSettings.pal = pal + 1000;
 
-            PDebug.Log($"see the changes :3");
+            PDEBUG.Log($"see the changes :3");
             self.room.game.cameras[0].ChangeMainPalette(pal + 1000);
             //RKMFP.SetExtraFadePalette(self.room.roomSettings, 0, newFade);
 
@@ -64,16 +56,16 @@ public partial class DevTools
         }
         if (Input.GetKey(KeyCode.F))
         {
-            PDebug.Log("Start testing dinamic fade palette");
+            PDEBUG.Log("Start testing dinamic fade palette");
 
             fpal = ((fpal + 1) % 3);
             RainCycle r = self.room.world.rainCycle;
 
             var screenCount = self.room.cameraPositions.Length;
-            PDebug.Log($"change fade palette to {fpal + 1000}");
+            PDEBUG.Log($"change fade palette to {fpal + 1000}");
             self.room.roomSettings.pal = fpal + 1000;
 
-            PDebug.Log($"see new the changes :3");
+            PDEBUG.Log($"see new the changes :3");
             self.room.game.cameras[0].ChangeFadePalette(fpal + 1000, val);
             //RKMFP.SetExtraFadePalette(self.room.roomSettings, 0, newFade);
 
@@ -81,16 +73,16 @@ public partial class DevTools
         }
         if (Input.GetKey(KeyCode.T))
         {
-            PDebug.Log("Start testing tic transicion palette");
+            PDEBUG.Log("Start testing tic transicion palette");
 
             val += 0.1f;
             RainCycle r = self.room.world.rainCycle;
 
             var screenCount = self.room.cameraPositions.Length;
-            PDebug.Log($"change palette from {self.room.roomSettings.pal} to {self.room.roomSettings.fadePalette.palette} in tic [{val}]");
+            PDEBUG.Log($"change palette from {self.room.roomSettings.pal} to {self.room.roomSettings.fadePalette.palette} in tic [{val}]");
 
             self.room.game.cameras[0].ChangeFadePalette(fpal + 1000, val);
-            PDebug.Log($"see the changes :3");
+            PDEBUG.Log($"see the changes :3");
 
             SetDevTimer(1);
         }

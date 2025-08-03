@@ -1,1 +1,1 @@
-﻿
+﻿global using PDEBUG = Plugin.DevTools;
