@@ -53,17 +53,17 @@
     </Reference>
   </ItemGroup>
 
-	<Target Name="PostBuildCopy" AfterTargets="Build">
+	<Target Name="PostBuildCopyMod" AfterTargets="Build">
 		<Copy SourceFiles="$(TargetDir)$(TargetFileName)"
 			  DestinationFolder="C:\Program Files (x86)\Steam\steamapps\common\Rain World\RainWorld_Data\StreamingAssets\mods\RainStates\plugins"
 			  OverwriteReadOnlyFiles="true" />
 	</Target>
 
-	<Target Name="PostBuildCopy" AfterTargets="Build">
+	<Target Name="PostBuildCopyInternal" AfterTargets="Build">
 		<Copy SourceFiles="$(TargetDir)$(TargetFileName)"
 			  DestinationFolder="$(ProjectDir)mod\plugins"
 			  OverwriteReadOnlyFiles="true" />
 	</Target>
 
-
+ 
 </Project>

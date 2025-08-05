@@ -1,7 +1,4 @@
-﻿
-global using UnityEngine;
-
-
+﻿using UnityEngine;
 
 namespace Plugin;
 
@@ -13,8 +10,8 @@ public partial class DevTools
     }
     public static void Init()
     {
-        On.PlayerGraphics.DrawSprites += PlayerGraphics_DrawSprites;
-        On.Player.Update += Player_Update;
+        //On.PlayerGraphics.DrawSprites += PlayerGraphics_DrawSprites;
+        //On.Player.Update += Player_Update;
     }
     public static bool notify = true;
     public static int devTimer = 0;
