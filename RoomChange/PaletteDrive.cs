@@ -13,7 +13,7 @@ public class PaletteDrive
         On.RoomCamera.UpdateDayNightPalette += RoomCamera_UpdateDayNightPalette;
     }
     private static int paletteIndex = 1;
-    private static int paletteLimit = 0;
+    private static int totalPalettes = 0;
 
     private static JsonGet.PaletteInfo activeRegionPalette;
     private static string regionName;
@@ -22,32 +22,20 @@ public class PaletteDrive
 
     private static void RoomCamera_UpdateDayNightPalette(On.RoomCamera.orig_UpdateDayNightPalette orig, RoomCamera self)
     {
-        if (self.room.world.region == null)
-        {
-            return;
-        }
-        
-        if(regionName == null || regionName != self.room.world.region.name)
-        {
-            if (!JsonGet.PaletteManager.Palettes.ContainsKey(self.room.world.region.name))
-            {
-                PDEBUG.Log("NOT FOUND| No palettes found for region: " + self.room.world.region.name);
-                orig(self);
-                return;
-            }
-
-            activeRegionPalette = JsonGet.PaletteManager.Palettes[self.room.world.region.name];
-            paletteLimit = activeRegionPalette.palette.Count;
+        if (!IsRegionValid(self)) { 
+            orig(self); 
+            return; 
         }
 
 
-        if (paletteIndex >= paletteLimit)
+        if (paletteIndex >= totalPalettes)
         {
             PDEBUG.Log("No more palettes to apply for region: " + self.room.world.region.name);
             self.room.game.cameras[0].ChangeMainPalette(activeRegionPalette.palette[paletteIndex - 1]);
             return;
         }
 
+        //move this later into a room ctor
         rainCycleLength = self.room.world.rainCycle.cycleLength;
         
 
@@ -70,7 +58,30 @@ public class PaletteDrive
             paletteIndex++;
         }
     }
+
+    private static bool IsRegionValid(RoomCamera self)
+    {
+        Region region = self.room.world.region;
+        if (region == null) return false;
+
+        if (regionName == null || regionName != region.name)
+        {
+            if (!JsonGet.PaletteManager.Palettes.ContainsKey(region.name))
+            {
+                PDEBUG.Log("NOT FOUND | No palettes found for region: " + region.name);
+                return false;
+            }
+
+            regionName = region.name;
+            activeRegionPalette = JsonGet.PaletteManager.Palettes[region.name];
+            totalPalettes = activeRegionPalette.palette.Count;
+        }
+
+        return true;
+    }
 }
+
+
 
 public static class RateChanges
 {
