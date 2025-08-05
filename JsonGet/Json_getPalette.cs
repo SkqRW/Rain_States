@@ -9,6 +9,8 @@ public class PaletteInfo
 {
     public List<int> palette { get; set; }
     public List<float> time { get; set; }
+
+
 }
 
 public static class PaletteManager

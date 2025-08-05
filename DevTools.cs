@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using BepInEx;
+using BepInEx.Logging;
+using UnityEngine;
 
 namespace Plugin;
 
@@ -101,5 +103,10 @@ public partial class DevTools
     public static void Log(string message)
     {
         UnityEngine.Debug.Log($"[Palette] {message}");
+    }
+
+    public static void LogWarn(string message)
+    {
+        UnityEngine.Debug.Log($"[Warn Palette] {message}");
     }
 }
