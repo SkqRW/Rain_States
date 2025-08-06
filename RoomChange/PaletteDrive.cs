@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace RoomChange;
 
-public class PaletteDrive
+public partial class PaletteDrive
 {
     private static int paletteIndex = 1;
     private static int totalPalettes;
@@ -17,7 +17,6 @@ public class PaletteDrive
     private static float actualTime;
     private static bool devMode = true;
 
-
     public static void Terminate()
     {
         On.RoomCamera.UpdateDayNightPalette -= RoomCamera_UpdateDayNightPalette;
@@ -27,40 +26,15 @@ public class PaletteDrive
         On.RoomCamera.UpdateDayNightPalette += RoomCamera_UpdateDayNightPalette;
     }
 
-    public static string GetCurrentRegionName()
-    {
-        return currentRegionName;
-    }
-    public static void SetRegionPalette(JsonGet.PaletteInfo newPaletteInfo)
-    {
-        activeRegionPalette = newPaletteInfo;
-        totalPalettes = activeRegionPalette.palette.Count;
-        NewRangePalette();
-    }
-
-
-    private static void NewRangePalette()
-    {
-        for(int i=0; i<totalPalettes; i++)
-        {
-            if(actualTime < activeRegionPalette.palette[i] * rainCycleLength)
-            {
-                paletteIndex = Mathf.Max(1, i);
-                RefreshPaletteInterval(paletteIndex);
-                return;
-            }
-        }
-        paletteIndex = totalPalettes;
-    }
-
-
     private static void RoomCamera_UpdateDayNightPalette(On.RoomCamera.orig_UpdateDayNightPalette orig, RoomCamera self)
     {
+        //TO DO: move this later into a room ctor
+        rainCycleLength = self.room.world.rainCycle.cycleLength;
+
         if (!IsRegionPaletteAvailable(self)) { 
             orig(self); 
             return; 
         }
-
 
         if (paletteIndex >= totalPalettes)
         {
@@ -68,9 +42,6 @@ public class PaletteDrive
             self.room.game.cameras[0].ChangeMainPalette(activeRegionPalette.palette[totalPalettes-1]);
             return;
         }
-
-        //TO DO: move this later into a room ctor
-        rainCycleLength = self.room.world.rainCycle.cycleLength;
 
         //Only can take values from [0, 1]
         actualTime = self.room.world.rainCycle.timer;
@@ -81,10 +52,10 @@ public class PaletteDrive
         self.room.game.cameras[0].ChangeBothPalettes(activeRegionPalette.palette[paletteIndex - 1], activeRegionPalette.palette[paletteIndex], paletteBlend);
 
         //Custom Debug
-        if(Input.GetKey(KeyCode.D))
-        {
-            PDEBUG.Log($"Region: {self.room.world.region.name} | paletteIndex: [{paletteIndex-1} - {paletteIndex}] | {paletteBlend}: ");
-        }
+        //if(Input.GetKey(KeyCode.D))
+        //{
+            PDEBUG.Log($"Region: {self.room.world.region.name} | paletteIndex: [{paletteIndex-1} - {paletteIndex}] | The percent of blend is  %{paletteBlend*100}: ");
+        //}
 
         if (paletteBlend > 1)
         {
@@ -116,35 +87,10 @@ public class PaletteDrive
                 return false;
             }
             RefreshPaletteInterval(1);
+            PDEBUG.Log($"Made a refresh in the region {currentRegionName}, now actual is {nextPaletteTime} and prev is {lastPaletteTime}");
+            PDEBUG.Log($"The cycle time is {rainCycleLength} and actualTime are {actualTime}");
         }
 
         return true;
     }
-
-    private static void RefreshPaletteInterval(int index)
-    {
-        if(index == 0)
-        {
-            PDEBUG.LogWarn($"Index {index} out of bounds in Palette Interval");
-            return;
-        }
-        
-        nextPaletteTime = rainCycleLength * activeRegionPalette.time[index];
-        lastPaletteTime = rainCycleLength * activeRegionPalette.time[index - 1];
-        paletteIndex = index;
-    }
 }
-
-
-
-public static class RateChanges
-{
-    //Relative path in A to B
-    public static float Linear(float now, float time, float pretime)
-    {
-        float delta = (now - pretime) / (time - pretime);
-        PDEBUG.Log($"now: {now}, nextPaletteTime: {time}, lastPaletteTime: {pretime}, paletteBlend: {delta}");
-        return delta;
-    }
-}
-
