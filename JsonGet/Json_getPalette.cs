@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
+using RoomChange;
 
 namespace JsonGet;
 
@@ -82,6 +83,8 @@ public static class PaletteManager
             //Sleep savestly
             System.Threading.Thread.Sleep(100);
             LoadPalettes();
+            PaletteDrive.SetRegionPalette(Palettes[PaletteDrive.GetCurrentRegionName()]);
+            BepInEx.Logging.Logger.CreateLogSource("Palette").LogInfo($"Palette reloaded from {_jsonPath}");
         };
         _JSONwatcher.EnableRaisingEvents = true;
     }
