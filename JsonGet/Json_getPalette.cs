@@ -35,13 +35,13 @@ public static class PaletteManager
         }
         catch (Exception ex)
         {
-            Debug.LogError($"[MyMod] Error al construir la ruta del archivo JSON: {ex.Message}");
+            Debug.LogError($"[Palette] Error al construir la ruta del archivo JSON: {ex.Message}");
             return;
         }
 
         if (!File.Exists(_jsonPath))
         {
-            Debug.LogError($"[MyMod] No se encontró nightCycle.json en: {_jsonPath}");
+            Debug.LogError($"[Palette] No se encontró nightCycle.json en: {_jsonPath}");
             return;
         }
 
