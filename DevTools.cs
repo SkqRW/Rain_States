@@ -98,15 +98,13 @@ public partial class DevTools
         devTimer = -seconds * 40;
     }
 
-
-
     public static void Log(string message)
     {
-        UnityEngine.Debug.Log($"[Palette] {message}");
+        UnityEngine.Debug.Log($"[{Plugin.NAME}] {message}");
     }
 
     public static void LogWarn(string message)
     {
-        UnityEngine.Debug.Log($"[Warn Palette] {message}");
+        UnityEngine.Debug.Log($"[Warn {Plugin.NAME}] {message}");
     }
 }

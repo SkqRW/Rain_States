@@ -4,7 +4,7 @@ Mod for allow an easy form to put transicion between palette during a normal cyc
 
 ### TO DO ###
 
-- [ ] Add jerachy in room specific
+- [-] Add jerachy in room specific
 - [ ] Add efect colot set up
 - [ ] Add more custom devlogs in game
 - [ ] Implement a machineconector for options i guess??

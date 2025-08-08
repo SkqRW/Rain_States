@@ -53,10 +53,10 @@ public partial class PaletteDrive
         self.room.game.cameras[0].ChangeBothPalettes(activeRegionPalette.palette[paletteIndex - 1], activeRegionPalette.palette[paletteIndex], paletteBlend);
 
         //Custom Debug
-        //if(Input.GetKey(KeyCode.D))
-        //{
+        if(self.room.game.devToolsActive)
+        {
             PDEBUG.Log($"Region: {self.room.world.region.name}, {self.room.abstractRoom.name} | paletteIndex: [{paletteIndex-1} - {paletteIndex}] | The percent of blend is  %{paletteBlend*100}: ");
-        //}
+        }
 
         if (paletteBlend > 1)
         {
