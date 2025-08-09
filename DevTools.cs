@@ -107,4 +107,9 @@ public partial class DevTools
     {
         UnityEngine.Debug.Log($"[Warn {Plugin.NAME}] {message}");
     }
+
+    public static void LogErr(string message)
+    {
+        UnityEngine.Debug.Log($"[ERROR {Plugin.NAME}] {message}");
+    }
 }

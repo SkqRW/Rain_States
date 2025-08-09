@@ -33,9 +33,6 @@
     <Reference Include="Assembly-CSharp">
       <HintPath>lib\PUBLIC-Assembly-CSharp.dll</HintPath>
     </Reference>
-    <Reference Include="RegionKit">
-      <HintPath>lib\RegionKit.dll</HintPath>
-    </Reference>
     <Reference Include="SlugBase">
       <HintPath>lib\SlugBase.dll</HintPath>
     </Reference>
@@ -55,7 +52,7 @@
 
 	<Target Name="PostBuildCopyMod" AfterTargets="Build">
 		<Copy SourceFiles="$(TargetDir)$(TargetFileName)"
-			  DestinationFolder="C:\Program Files (x86)\Steam\steamapps\common\Rain World\RainWorld_Data\StreamingAssets\mods\RainStates\plugins"
+			  DestinationFolder="C:\Program Files (x86)\Steam\steamapps\common\Rain World\RainWorld_Data\StreamingAssets\mods\Rain States\plugins"
 			  OverwriteReadOnlyFiles="true" />
 	</Target>
 

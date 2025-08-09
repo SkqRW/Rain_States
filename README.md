@@ -2,7 +2,7 @@ The mods testing is in release
 
 Mod for allow an easy form to put transicion between palette during a normal cycle in the game Rain World
 
-### TO DO ###
+### TO DO
 
 - [-] Add jerachy in room specific
 - [ ] Add efect colot set up
@@ -15,3 +15,10 @@ Mod for allow an easy form to put transicion between palette during a normal cyc
 
 - [ ] Put more todo
 - [ ] Add a better documentacion later 
+
+
+### FEATURES
+- [ ] Hot raload json
+- [ ] Room specific palettes
+- [ ] Percent of transition palette
+- [ ] Set last palette in case of no rain

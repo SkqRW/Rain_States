@@ -16,6 +16,7 @@ public partial class PaletteDrive
     private static float lastPaletteTime;
     private static float actualTime;
     private static bool devMode = true;
+    private static bool firstTime = true;
 
     public static void Terminate()
     {
@@ -28,6 +29,8 @@ public partial class PaletteDrive
 
     private static void RoomCamera_UpdateDayNightPalette(On.RoomCamera.orig_UpdateDayNightPalette orig, RoomCamera self)
     {
+        PDEBUG.Log($"1-Palette blend is greater than 1, updating palette index: {paletteIndex}");
+
         //TO DO: move this later into a room ctor
         rainCycleLength = self.room.world.rainCycle.cycleLength;
 
@@ -35,6 +38,7 @@ public partial class PaletteDrive
             orig(self); 
             return; 
         }
+        PDEBUG.Log($"2-Palette blend is greater than 1, updating palette index: {paletteIndex}");
 
 
         if (paletteIndex >= totalPalettes)
@@ -43,6 +47,7 @@ public partial class PaletteDrive
             self.room.game.cameras[0].ChangeMainPalette(activeRegionPalette.palette[totalPalettes-1]);
             return;
         }
+        PDEBUG.Log($"3-Palette blend is greater than 1, updating palette index: {paletteIndex}");
 
         //Only can take values from [0, 1]
         actualTime = self.room.world.rainCycle.timer;
@@ -51,17 +56,19 @@ public partial class PaletteDrive
         //Yeah, I know this is a bit hacky, but it works for now
         //Later see how to overrise the main palette and fade palette to the custom ones
         self.room.game.cameras[0].ChangeBothPalettes(activeRegionPalette.palette[paletteIndex - 1], activeRegionPalette.palette[paletteIndex], paletteBlend);
+        PDEBUG.Log($"4-Palette blend is greater than 1, updating palette index: {paletteIndex}");
 
         //Custom Debug
-        if(self.room.game.devToolsActive)
+        if (self.room.game.devToolsActive)
         {
             PDEBUG.Log($"Region: {self.room.world.region.name}, {self.room.abstractRoom.name} | paletteIndex: [{paletteIndex-1} - {paletteIndex}] | The percent of blend is  %{paletteBlend*100}: ");
         }
 
         if (paletteBlend > 1)
         {
-            paletteIndex++;
-            RefreshPaletteInterval(paletteIndex);
+            PDEBUG.Log($"Palette blend is greater than 1, updating palette index: {paletteIndex}");
+            RefreshPaletteInterval(paletteIndex+1);
+            PDEBUG.Log($"||Palette blend is greater than 1, updating palette index: {paletteIndex}");
         }
     }
 
@@ -102,7 +109,8 @@ public partial class PaletteDrive
                 paletteIndex = totalPalettes; //Skip the update
                 return false;
             }
-            RefreshPaletteInterval(1);
+
+            NewRangePalette();
             PDEBUG.Log($"[{IsspecificRoom}] Made a refresh in the region {currentRegionName}, now actual is {nextPaletteTime} and prev is {lastPaletteTime}");
             PDEBUG.Log($"The cycle time is {rainCycleLength} and actualTime are {actualTime}");
         }
