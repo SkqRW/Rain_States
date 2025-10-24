@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
@@ -20,6 +20,8 @@ public static class PaletteManager
     private static FileSystemWatcher _JSONwatcher;
     private static string _jsonPath;
 
+    private static string NameFile = "RainStates";
+
     //TO DO: change the Pdebug for a BepInEx Logger 
     public static void LoadPalettes()
     {
@@ -29,7 +31,7 @@ public static class PaletteManager
             {
                 string dllPath = System.Reflection.Assembly.GetExecutingAssembly().Location;
                 string modFolder = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(dllPath), ".."));
-                _jsonPath = Path.Combine(modFolder, "palettes", "NightCycle.json");
+                _jsonPath = Path.Combine(modFolder, "palettes", $"{NameFile}.json");
                 SetupWatcherJson();
             }
         }
@@ -41,7 +43,7 @@ public static class PaletteManager
 
         if (!File.Exists(_jsonPath))
         {
-            Debug.LogError($"[Palette] No se encontró nightCycle.json en: {_jsonPath}");
+            Debug.LogError($"[Palette] No se encontró {NameFile}.json en: {_jsonPath}");
             return;
         }
 
@@ -49,7 +51,7 @@ public static class PaletteManager
         {
             string json = File.ReadAllText(_jsonPath);
             Palettes = JsonConvert.DeserializeObject<Dictionary<string, PaletteInfo>>(json);
-            BepInEx.Logging.Logger.CreateLogSource("Palette").LogInfo($"Palette correctly load from {_jsonPath}");
+            BepInEx.Logging.Logger.CreateLogSource(NameFile).LogInfo($"Palette correctly load from {_jsonPath}");
             foreach (var kvp in Palettes)
             {
                 string nombre = kvp.Key;
@@ -62,7 +64,7 @@ public static class PaletteManager
         }
         catch (Exception ex)
         {
-            Debug.LogError($"[MyMod] Error al leer nightCycle.json: {ex.Message}");
+            Debug.LogError($"[{NameFile}] Error al leer {NameFile}.json: {ex.Message}");
         }
     }
 
@@ -84,7 +86,7 @@ public static class PaletteManager
             System.Threading.Thread.Sleep(100);
             LoadPalettes();
             PaletteDrive.SetRegionPalette(Palettes[PaletteDrive.GetCurrentRegionName()]);
-            BepInEx.Logging.Logger.CreateLogSource("Palette").LogInfo($"Palette reloaded from {_jsonPath}");
+            BepInEx.Logging.Logger.CreateLogSource(NameFile).LogInfo($"Palette reloaded from {_jsonPath}");
         };
         _JSONwatcher.EnableRaisingEvents = true;
     }

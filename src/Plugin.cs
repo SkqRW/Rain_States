@@ -32,6 +32,7 @@ public partial class Plugin : BaseUnityPlugin
         orig(self);
         JsonGet.PaletteManager.LoadPalettes();
         Logger.LogInfo($"[{NAME}] {VER} Json loaded successfully!");
+        
     }
 
 

@@ -2,6 +2,7 @@
 using JsonGet;
 using UnityEngine;
 
+
 namespace RoomChange;
 
 public partial class PaletteDrive
@@ -18,102 +19,126 @@ public partial class PaletteDrive
     private static bool devMode = true;
     private static bool firstTime = true;
 
+    private static bool DEBUGflagRegion = true;
+    private static bool DEBUGflagCycle = true;
+
     public static void Terminate()
     {
-        On.RoomCamera.UpdateDayNightPalette -= RoomCamera_UpdateDayNightPalette;
+        On.RoomCamera.UpdateDayNightPalette -= UpdateRainStatePaletteRoom;
     }
     public static void Init()
     {
-        On.RoomCamera.UpdateDayNightPalette += RoomCamera_UpdateDayNightPalette;
+        On.RoomCamera.UpdateDayNightPalette += UpdateRainStatePaletteRoom;
     }
 
-    private static void RoomCamera_UpdateDayNightPalette(On.RoomCamera.orig_UpdateDayNightPalette orig, RoomCamera self)
+    /// <summary>
+    /// Method that update the palette if found
+    /// </summary>
+    /// <param name="orig"></param>
+    /// <param name="self"></param>
+    private static void UpdateRainStatePaletteRoom(On.RoomCamera.orig_UpdateDayNightPalette orig, RoomCamera self)
     {
         PDEBUG.Log($"1-Palette blend is greater than 1, updating palette index: {paletteIndex}");
 
         //TO DO: move this later into a room ctor
         rainCycleLength = self.room.world.rainCycle.cycleLength;
 
-        if (!IsRegionPaletteAvailable(self)) { 
-            orig(self); 
-            return; 
+        if (!IsRegionPaletteAvailable(self))
+        {
+            if (DEBUGflagRegion)
+            {
+                PDEBUG.Log("Palette Config not available, using original method.");
+                DEBUGflagRegion = false;
+            }
+            orig(self);
+            return;
         }
-        PDEBUG.Log($"2-Palette blend is greater than 1, updating palette index: {paletteIndex}");
-
 
         if (paletteIndex >= totalPalettes)
         {
-            PDEBUG.Log("No more palettes to apply for region: " + self.room.world.region.name);
-            self.room.game.cameras[0].ChangeMainPalette(activeRegionPalette.palette[totalPalettes-1]);
+            if (DEBUGflagCycle)
+            {
+                PDEBUG.Log("No more palettes to apply for region: " + self.room.world.region.name);
+                self.room.game.cameras[0].ChangeMainPalette(activeRegionPalette.palette[totalPalettes - 1]);
+                DEBUGflagCycle = false;
+            }
             return;
         }
-        PDEBUG.Log($"3-Palette blend is greater than 1, updating palette index: {paletteIndex}");
+
 
         //Only can take values from [0, 1]
+        // If have more than 1, just change to the next palette
         actualTime = self.room.world.rainCycle.timer;
-        float paletteBlend = RateChanges.Linear(actualTime, nextPaletteTime, lastPaletteTime);
+    float paletteBlend = RateChanges.Linear(actualTime, nextPaletteTime, lastPaletteTime);
+    paletteBlend = Mathf.Clamp01(paletteBlend);
 
         //Yeah, I know this is a bit hacky, but it works for now
         //Later see how to overrise the main palette and fade palette to the custom ones
-        self.room.game.cameras[0].ChangeBothPalettes(activeRegionPalette.palette[paletteIndex - 1], activeRegionPalette.palette[paletteIndex], paletteBlend);
-        PDEBUG.Log($"4-Palette blend is greater than 1, updating palette index: {paletteIndex}");
+    int prevIndex = Mathf.Max(0, paletteIndex - 1);
+    int currIndex = Mathf.Clamp(paletteIndex, 0, activeRegionPalette.palette.Count - 1);
+    self.room.game.cameras[0].ChangeBothPalettes(activeRegionPalette.palette[prevIndex], activeRegionPalette.palette[currIndex], paletteBlend);
 
         //Custom Debug
         if (self.room.game.devToolsActive)
         {
-            PDEBUG.Log($"Region: {self.room.world.region.name}, {self.room.abstractRoom.name} | paletteIndex: [{paletteIndex-1} - {paletteIndex}] | The percent of blend is  %{paletteBlend*100}: ");
-        }
+            PDEBUG.Log($"Region: {self.room.world.region.name}, {self.room.abstractRoom.name} | paletteIndex: [{paletteIndex - 1} - {paletteIndex}] | The percent of blend is  %{paletteBlend * 100}: ");
+        }    
 
         if (paletteBlend > 1)
         {
             PDEBUG.Log($"Palette blend is greater than 1, updating palette index: {paletteIndex}");
-            RefreshPaletteInterval(paletteIndex+1);
-            PDEBUG.Log($"||Palette blend is greater than 1, updating palette index: {paletteIndex}");
+            RefreshPaletteInterval(paletteIndex + 1);
+            PDEBUG.Log($"|||| Palette blend is greater than 1, updating palette index: {paletteIndex}");
         }
     }
 
     private static bool IsRegionPaletteAvailable(RoomCamera self)
     {
         if (self == null || self.room == null) return false;
+        if (JsonGet.PaletteManager.Palettes == null)
+        {
+            PDEBUG.Log("Palettes no cargadas aún.");
+            return false;
+        }
         Region region = self.room.world.region;
         bool IsspecificRoom = false;
 
-        if (true)
+
+        // Especific room
+        if (JsonGet.PaletteManager.Palettes.ContainsKey(self.room.abstractRoom.name))
         {
-            // Especific room
-            if (JsonGet.PaletteManager.Palettes.ContainsKey(self.room.abstractRoom.name))
-            {
-                IsspecificRoom = true;
-            }
-            // Region name
-            if (!IsspecificRoom && !JsonGet.PaletteManager.Palettes.ContainsKey(region.name))
-            {
-                PDEBUG.Log($"NOT FOUND | No palettes found for region: {region.name}");
-                return false;
-            }
-
-            string room = IsspecificRoom ? self.room.abstractRoom.name : region.name;
-            currentRegionName = room;
-            activeRegionPalette = JsonGet.PaletteManager.Palettes[room];
-            totalPalettes = activeRegionPalette.palette.Count;
-
-            if (totalPalettes == 0)
-            {
-                PDEBUG.Log($"Palette not found for {room}");
-                return false;
-            }
-
-            if (totalPalettes == 1)
-            {
-                PDEBUG.Log($"ONLY ONE PALETTE | No need to cycle palettes for region: {room}");
-                paletteIndex = totalPalettes; //Skip the update
-                return false;
-            }
-
-            NewRangePalette();
-            PDEBUG.Log($"[{IsspecificRoom}] Made a refresh in the region {currentRegionName}, now actual is {nextPaletteTime} and prev is {lastPaletteTime}");
-            PDEBUG.Log($"The cycle time is {rainCycleLength} and actualTime are {actualTime}");
+            IsspecificRoom = true;
         }
+        
+        // Region name
+        if (!IsspecificRoom && !JsonGet.PaletteManager.Palettes.ContainsKey(region.name))
+        {
+            PDEBUG.Log($"NOT FOUND | No palettes found for region: {region.name}");
+            return false;
+        }
+
+        string room = IsspecificRoom ? self.room.abstractRoom.name : region.name;
+        currentRegionName = room;
+        activeRegionPalette = JsonGet.PaletteManager.Palettes[room];
+        totalPalettes = activeRegionPalette.palette.Count;
+
+        if (totalPalettes == 0)
+        {
+            PDEBUG.Log($"Palette not found for {room}");
+            return false;
+        }
+
+        if (totalPalettes == 1)
+        {
+            PDEBUG.Log($"ONLY ONE PALETTE | No need to cycle palettes for region: {room}");
+            paletteIndex = totalPalettes; //Skip the update
+            return false;
+        }
+
+        PDEBUG.Log($"[{IsspecificRoom}] Made a refresh in the region {currentRegionName}, now actual is {nextPaletteTime} and prev is {lastPaletteTime}");
+        NewRangePalette();
+        PDEBUG.Log($"The cycle time is {rainCycleLength} and actualTime are {actualTime}");
+        
         return true;
     }
 }
