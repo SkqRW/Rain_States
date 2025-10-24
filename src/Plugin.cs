@@ -20,11 +20,21 @@ public partial class Plugin : BaseUnityPlugin
 
     private void OnDisable()
     {
+        JsonGet.PaletteManager.Cleanup();
     }
     private void OnEnable()
     {
         On.RainWorld.OnModsInit += RainWorldOnOnModsInit;
         On.RainWorld.PostModsInit += RainWorld_PostModsInit;
+        On.RainWorldGame.Update += RainWorldGame_Update;
+    }
+
+    private void RainWorldGame_Update(On.RainWorldGame.orig_Update orig, RainWorldGame self)
+    {
+        orig(self);
+        
+        // Revisar y aplicar cambios en archivos de paletas cada frame
+        JsonGet.PaletteManager.ReloadChangedFiles();
     }
 
     private void RainWorld_PostModsInit(On.RainWorld.orig_PostModsInit orig, RainWorld self)
