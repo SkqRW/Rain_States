@@ -1,19 +1,13 @@
 using UnityEngine;
 
-namespace RoomChange;
+namespace RoomChange.Transitions;
 
-    /// <summary>
-    /// Linear palette transition (default fallback).
-    /// </summary>
-    /// 
-
-
-public static class RateChanges
+public class Linear
 {
     const float epsilon = 0.0001f;
 
     //Relative path in A to B
-    public static float Linear(float now, float time, float pretime)
+    public static float GetBlend(float now, float pretime, float time)
     {
         if (Mathf.Abs(time - pretime) < epsilon)
         {

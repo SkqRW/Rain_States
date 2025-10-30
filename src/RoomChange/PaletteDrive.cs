@@ -74,14 +74,15 @@ public partial class PaletteDrive
         //Only can take values from [0, 1]
         // If have more than 1, just change to the next palette
         actualTime = self.room.world.rainCycle.timer;
-        float paletteBlend = RateChanges.Linear(actualTime, nextPaletteTime, lastPaletteTime);
+        float paletteBlend = Transitions.Linear.GetBlend(actualTime, lastPaletteTime, nextPaletteTime);
 
         int prevIndex = Math.Max(paletteIndex, 0);
         int nextIndex = Math.Min(paletteIndex + 1, activeRegionPalette.BasePalette.Count - 1);
 
         //This is only need 2 integer and blend mmm
-        self.room.game.cameras[0].ChangeBothPalettes(activeRegionPalette.BasePalette[prevIndex], activeRegionPalette.BasePalette[nextIndex], paletteBlend);
-
+        PaintRoom.ChangeBothPalettes(self.room.game.cameras[0], activeRegionPalette.BasePalette[prevIndex], activeRegionPalette.BasePalette[nextIndex], paletteBlend);
+        
+        
         //Custom Debug
         if (self.room.game.devToolsActive)
         {
