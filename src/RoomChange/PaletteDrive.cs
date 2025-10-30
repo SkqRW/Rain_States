@@ -10,7 +10,7 @@ public partial class PaletteDrive
     private static int totalPalettes;
 
     private static RoomChange.PaletteData activeRegionPalette;
-    private static string currentRegionName;
+    public static string currentRegionName;
     private static int rainCycleLength;
     private static float nextPaletteTime;
     private static float lastPaletteTime;
@@ -37,9 +37,15 @@ public partial class PaletteDrive
     /// <param name="self"></param>
     private static void UpdateRainStatePaletteRoom(On.RoomCamera.orig_UpdateDayNightPalette orig, RoomCamera self)
     {
+        if (self == null || self.room == null)
+        {
+            orig(self);
+            return;
+        }
+        
         rainCycleLength = self.room.world.rainCycle.cycleLength;
 
-        if (!IsRegionPaletteAvailable(self))
+        if (!PaletteInfo.IsRegionPaletteAvailable(self.room))
         {
             if (DEBUGflagRegion)
             {
@@ -48,6 +54,8 @@ public partial class PaletteDrive
             orig(self);
             return;
         }
+
+        
 
         if (paletteIndex >= totalPalettes)
         {
@@ -87,33 +95,10 @@ public partial class PaletteDrive
         }
     }
 
-    private static bool IsRegionPaletteAvailable(RoomCamera self)
+    
+    
+    public static bool applychange(string room, bool IsspecificRoom)
     {
-        if (self == null || self.room == null) return false;
-        if (PaletteInfo.Palettes == null)
-        {
-            PDEBUG.Log("Palettes no cargadas aún.");
-            return false;
-        }
-        Region region = self.room.world.region;
-        bool IsspecificRoom = false;
-
-
-        // Especific room
-        if (PaletteInfo.Palettes.ContainsKey(self.room.abstractRoom.name))
-        {
-            IsspecificRoom = true;
-        }
-        
-        // Region name
-        if (!IsspecificRoom && !PaletteInfo.Palettes.ContainsKey(region.name))
-        {
-            PDEBUG.Log($"NOT FOUND | No palettes found for region: {region.name}");
-            return false;
-        }
-
-        string room = IsspecificRoom ? self.room.abstractRoom.name : region.name;
-        currentRegionName = room;
         activeRegionPalette = PaletteInfo.Palettes[room];
         totalPalettes = activeRegionPalette.palette.Count;
 

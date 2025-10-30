@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using BepInEx.Logging;
 using Newtonsoft.Json;
 using RoomChange;
 using UnityEngine;
@@ -15,13 +16,11 @@ public static class PaletteManager
     private static readonly Dictionary<string, FileSystemWatcher> _watchers = new Dictionary<string, FileSystemWatcher>();
     private static readonly ConcurrentQueue<string> _reloadQueue = new ConcurrentQueue<string>();
     private static readonly Dictionary<string, DateTime> _lastLoadTimes = new Dictionary<string, DateTime>();
+
+    private static ManualLogSource log = BepInEx.Logging.Logger.CreateLogSource("Rain States PaletteManager");
     
     private const string PALETTE_FOLDER = "palettes";
     private const string PALETTE_FILE_PATTERN = "RainStates*.json";
-
-    /// <summary>
-    /// Obtiene todas las paletas cargadas desde todos los mods activos
-    /// </summary>
 
     /// <summary>
     /// Evento que se dispara cuando se recarga una paleta
@@ -38,34 +37,32 @@ public static class PaletteManager
     /// </summary>
     public static void LoadPalettes()
     {
-        BepInEx.Logging.Logger.CreateLogSource("PaletteManager").LogWarning("PaletteManager already initialized. Reloading...");
-            
-        PaletteInfo._allPalettes.Clear();
-
-        // Escanear todos los mods activos
+        log.LogWarning("PaletteManager already initialized. Reloading...");
+        PaletteInfo.Palettes.Clear();
         ScanAllActiveMods();
 
-        BepInEx.Logging.Logger.CreateLogSource("PaletteManager").LogInfo($"Loaded {PaletteInfo._allPalettes.Count} total palette entries from all mods");
+        log.LogInfo($"Loaded {PaletteInfo.Palettes.Count} total palette entries from all mods");
         
-        // Log de todas las paletas cargadas
-        foreach (var kvp in PaletteInfo._allPalettes)
+        // Log all loaded palettes for debugging
+        log.LogDebug("Loaded Palettes:");
+        foreach (var kvp in PaletteInfo.Palettes)
         {
             string regionName = kvp.Key;
             var info = kvp.Value;
             string paletteStr = string.Join(", ", info.palette);
             string timeStr = string.Join(", ", info.time);
-            BepInEx.Logging.Logger.CreateLogSource("Palette").LogInfo($"Region: {regionName} | Palette: [{paletteStr}] | Time: [{timeStr}]");
+            log.LogInfo($"Region: {regionName} | Palette: [{paletteStr}] | Time: [{timeStr}]");
         }
     }
 
     /// <summary>
-    /// Escanea todos los mods activos buscando archivos de paletas RainStates
+    /// Scan all active mods for palette files
     /// </summary>
     private static void ScanAllActiveMods()
     {
         if (ModManager.ActiveMods == null || ModManager.ActiveMods.Count == 0)
         {
-            BepInEx.Logging.Logger.CreateLogSource("PaletteManager").LogWarning("No active mods found");
+            log.LogWarning("No active mods found");
             return;
         }
 
@@ -77,7 +74,7 @@ public static class PaletteManager
             }
             catch (Exception ex)
             {
-                BepInEx.Logging.Logger.CreateLogSource("PaletteManager").LogError($"Error scanning mod {mod.id}: {ex.Message}");
+                log.LogError($"Error scanning mod {mod.id}: {ex.Message}");
             }
         }
     }
@@ -147,7 +144,7 @@ public static class PaletteManager
         }
         catch (Exception ex)
         {
-            BepInEx.Logging.Logger.CreateLogSource("PaletteManager").LogError($"Error scanning directory {directory}: {ex.Message}");
+            log.LogError($"Error scanning directory {directory}: {ex.Message}");
         }
     }
 
@@ -163,7 +160,7 @@ public static class PaletteManager
         catch (Exception ex)
         {
             string errorMessage = $"Error loading palette file from {filePath}: {ex.Message}";
-            BepInEx.Logging.Logger.CreateLogSource("PaletteManager").LogError(errorMessage);
+            log.LogError(errorMessage);
             LoadFailed?.Invoke(null, new PaletteLoadErrorEventArgs(errorMessage, ex, filePath));
         }
     }
@@ -190,20 +187,20 @@ public static class PaletteManager
             string regionKey = kvp.Key;
             
             // Si ya existe, loguear que se está sobrescribiendo
-            if (PaletteInfo._allPalettes.ContainsKey(regionKey))
+            if (PaletteInfo.Palettes.ContainsKey(regionKey))
             {
-                BepInEx.Logging.Logger.CreateLogSource("PaletteManager").LogWarning(
+                log.LogWarning(
                     $"Overwriting palette for region '{regionKey}' with version from mod '{modId}'"
                 );
             }
 
-            PaletteInfo._allPalettes[regionKey] = kvp.Value;
+            PaletteInfo.Palettes[regionKey] = kvp.Value;
         }
 
         // Actualizar tiempo de última carga
         _lastLoadTimes[filePath] = DateTime.Now;
 
-        BepInEx.Logging.Logger.CreateLogSource("PaletteManager").LogInfo(
+        log.LogInfo(
             $"Loaded {palettes.Count} palette(s) from {Path.GetFileName(filePath)} (mod: {modId})"
         );
     }
@@ -230,11 +227,11 @@ public static class PaletteManager
 
             _watchers[directory] = watcher;
 
-            BepInEx.Logging.Logger.CreateLogSource("PaletteManager").LogDebug($"Watching directory: {directory}");
+            log.LogDebug($"Watching directory: {directory}");
         }
         catch (Exception ex)
         {
-            BepInEx.Logging.Logger.CreateLogSource("PaletteManager").LogError($"Failed to setup watcher for {directory}: {ex.Message}");
+            log.LogError($"Failed to setup watcher for {directory}: {ex.Message}");
         }
     }
 
@@ -281,26 +278,26 @@ public static class PaletteManager
                 // Disparar evento de recarga
                 PaletteReloaded?.Invoke(null, new PaletteReloadedEventArgs(filePath, modId));
 
-                BepInEx.Logging.Logger.CreateLogSource("PaletteManager").LogInfo($"Reloaded palette file: {Path.GetFileName(filePath)}");
+                log.LogInfo($"Reloaded palette file: {Path.GetFileName(filePath)}");
 
                 // Actualizar la paleta actual si es necesario
                 try
                 {
                     string currentRegion = PaletteDrive.GetCurrentRegionName();
-                    if (!string.IsNullOrEmpty(currentRegion) && PaletteInfo._allPalettes.ContainsKey(currentRegion))
+                    if (!string.IsNullOrEmpty(currentRegion) && PaletteInfo.Palettes.ContainsKey(currentRegion))
                     {
-                        PaletteDrive.SetRegionPalette(PaletteInfo._allPalettes[currentRegion]);
+                        PaletteDrive.SetRegionPalette(PaletteInfo.Palettes[currentRegion]);
                     }
                 }
                 catch (Exception ex)
                 {
-                    BepInEx.Logging.Logger.CreateLogSource("PaletteManager").LogError($"Failed to update current palette: {ex.Message}");
+                    log.LogError($"Failed to update current palette: {ex.Message}");
                 }
             }
             catch (Exception ex)
             {
                 string errorMessage = $"Failed to reload palette file {filePath}: {ex.Message}";
-                BepInEx.Logging.Logger.CreateLogSource("PaletteManager").LogError(errorMessage);
+                log.LogError(errorMessage);
                 LoadFailed?.Invoke(null, new PaletteLoadErrorEventArgs(errorMessage, ex, filePath));
             }
         }
@@ -396,7 +393,7 @@ public static class PaletteManager
         while (_reloadQueue.TryDequeue(out _)) ;
         _lastLoadTimes.Clear();
 
-        BepInEx.Logging.Logger.CreateLogSource("PaletteManager").LogInfo("PaletteManager cleaned up");
+        log.LogInfo("PaletteManager cleaned up");
     }
 
     /// <summary>
