@@ -49,8 +49,8 @@ public static class PaletteManager
         {
             string regionName = kvp.Key;
             var info = kvp.Value;
-            string paletteStr = string.Join(", ", info.palette);
-            string timeStr = string.Join(", ", info.time);
+            string paletteStr = string.Join(", ", info.BasePalette);
+            string timeStr = string.Join(", ", info.BaseTime);
             log.LogInfo($"Region: {regionName} | Palette: [{paletteStr}] | Time: [{timeStr}]");
         }
     }
@@ -279,20 +279,6 @@ public static class PaletteManager
                 PaletteReloaded?.Invoke(null, new PaletteReloadedEventArgs(filePath, modId));
 
                 log.LogInfo($"Reloaded palette file: {Path.GetFileName(filePath)}");
-
-                // Actualizar la paleta actual si es necesario
-                try
-                {
-                    string currentRegion = PaletteDrive.GetCurrentRegionName();
-                    if (!string.IsNullOrEmpty(currentRegion) && PaletteInfo.Palettes.ContainsKey(currentRegion))
-                    {
-                        PaletteDrive.SetRegionPalette(PaletteInfo.Palettes[currentRegion]);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    log.LogError($"Failed to update current palette: {ex.Message}");
-                }
             }
             catch (Exception ex)
             {

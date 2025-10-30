@@ -1,19 +1,31 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Newtonsoft.Json;
 
 namespace RoomChange;
 
 public class PaletteData
 {
-    public List<int> palette { get; set; }
-    public List<float> time { get; set; }
+    [JsonProperty("palette")]
+    public List<int> BasePalette { get; set; }
+
+    [JsonProperty("time")]
+    public List<float> BaseTime { get; set; }
+
+    public int BaseLength => BasePalette.Count;
 }
 
 public static class PaletteInfo
 {
     public static Dictionary<string, RoomChange.PaletteData> Palettes = new Dictionary<string, RoomChange.PaletteData>();
 
+    private static int RainCycleLength;
+
+    public static void SetRainCycleLength(int length)
+    {
+        RainCycleLength = length;
+    }
 
     public static bool IsRegionPaletteAvailable(Room self, ref string room)
     {
@@ -42,7 +54,7 @@ public static class PaletteInfo
         room = IsspecificRoom ? self.abstractRoom.name : region.name;
         PaletteDrive.currentRegionName = room;
 
-        if (Palettes[room].palette.Count == 0)
+        if (Palettes[room].BasePalette.Count == 0)
         {
             PDEBUG.Log($"Palette not found for {room}");
             return false;
@@ -51,19 +63,23 @@ public static class PaletteInfo
         return true;
     }
 
-    public static void CalculatePaletteIntervals(float timeNow, float rainCycleLength, PaletteData data, ref int currentPaletteIndex, ref float nextPaletteTime)
+    public static void CalculatePaletteIntervals(float timeNow, PaletteData data, ref int currentPaletteIndex, ref float lastPaletteTime, ref float nextPaletteTime)
     {
-        for (int i = 1; i < data.palette.Count; i++)
+        for (int i = 1; i < data.BaseLength; i++)
         {
-            float endTimePalette = data.time[i] * rainCycleLength;
+            float endTimePalette = data.BaseTime[i] * RainCycleLength;
             if (timeNow < endTimePalette)
             {
                 currentPaletteIndex = i - 1;
+                lastPaletteTime = data.BaseTime[currentPaletteIndex] * RainCycleLength;
                 nextPaletteTime = endTimePalette;
                 return;
             }
         }
-        currentPaletteIndex = data.palette.Count - 1;
+        currentPaletteIndex = data.BasePalette.Count - 1;
+        lastPaletteTime = RainCycleLength * data.BaseTime[currentPaletteIndex];
         nextPaletteTime = Mathf.Infinity;
     }
+
+    
 }
