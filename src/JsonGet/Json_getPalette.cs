@@ -9,27 +9,21 @@ using UnityEngine;
 
 namespace JsonGet;
 
-public class PaletteInfo
-{
-    public List<int> palette { get; set; }
-    public List<float> time { get; set; }
-}
 
 public static class PaletteManager
 {
-    private static readonly Dictionary<string, PaletteInfo> _allPalettes = new Dictionary<string, PaletteInfo>();
+    private static readonly Dictionary<string, RoomChange.PaletteData> _allPalettes = new Dictionary<string, RoomChange.PaletteData>();
     private static readonly Dictionary<string, FileSystemWatcher> _watchers = new Dictionary<string, FileSystemWatcher>();
     private static readonly ConcurrentQueue<string> _reloadQueue = new ConcurrentQueue<string>();
     private static readonly Dictionary<string, DateTime> _lastLoadTimes = new Dictionary<string, DateTime>();
     
     private const string PALETTE_FOLDER = "palettes";
     private const string PALETTE_FILE_PATTERN = "RainStates*.json";
-    private static bool _isInitialized = false;
 
     /// <summary>
     /// Obtiene todas las paletas cargadas desde todos los mods activos
     /// </summary>
-    public static Dictionary<string, PaletteInfo> Palettes => _allPalettes;
+    public static Dictionary<string, RoomChange.PaletteData> Palettes => _allPalettes;
 
     /// <summary>
     /// Evento que se dispara cuando se recarga una paleta
@@ -46,12 +40,8 @@ public static class PaletteManager
     /// </summary>
     public static void LoadPalettes()
     {
-        if (_isInitialized)
-        {
-            BepInEx.Logging.Logger.CreateLogSource("PaletteManager").LogWarning("PaletteManager already initialized. Reloading...");
-        }
-
-        _isInitialized = true;
+        BepInEx.Logging.Logger.CreateLogSource("PaletteManager").LogWarning("PaletteManager already initialized. Reloading...");
+            
         _allPalettes.Clear();
 
         // Escanear todos los mods activos
@@ -189,7 +179,7 @@ public static class PaletteManager
             return;
 
         string json = File.ReadAllText(filePath);
-        var palettes = JsonConvert.DeserializeObject<Dictionary<string, PaletteInfo>>(json);
+        var palettes = JsonConvert.DeserializeObject<Dictionary<string, RoomChange.PaletteData>>(json);
 
         if (palettes == null)
         {
