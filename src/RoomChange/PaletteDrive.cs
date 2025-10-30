@@ -1,5 +1,4 @@
 ﻿using System.Linq;
-using JsonGet;
 using UnityEngine;
 
 
@@ -38,9 +37,6 @@ public partial class PaletteDrive
     /// <param name="self"></param>
     private static void UpdateRainStatePaletteRoom(On.RoomCamera.orig_UpdateDayNightPalette orig, RoomCamera self)
     {
-        PDEBUG.Log($"1-Palette blend is greater than 1, updating palette index: {paletteIndex}");
-
-        //TO DO: move this later into a room ctor
         rainCycleLength = self.room.world.rainCycle.cycleLength;
 
         if (!IsRegionPaletteAvailable(self))
@@ -48,7 +44,6 @@ public partial class PaletteDrive
             if (DEBUGflagRegion)
             {
                 PDEBUG.Log("Palette Config not available, using original method.");
-                DEBUGflagRegion = false;
             }
             orig(self);
             return;
@@ -95,7 +90,7 @@ public partial class PaletteDrive
     private static bool IsRegionPaletteAvailable(RoomCamera self)
     {
         if (self == null || self.room == null) return false;
-        if (JsonGet.PaletteManager.Palettes == null)
+        if (PaletteInfo.Palettes == null)
         {
             PDEBUG.Log("Palettes no cargadas aún.");
             return false;
@@ -105,13 +100,13 @@ public partial class PaletteDrive
 
 
         // Especific room
-        if (JsonGet.PaletteManager.Palettes.ContainsKey(self.room.abstractRoom.name))
+        if (PaletteInfo.Palettes.ContainsKey(self.room.abstractRoom.name))
         {
             IsspecificRoom = true;
         }
         
         // Region name
-        if (!IsspecificRoom && !JsonGet.PaletteManager.Palettes.ContainsKey(region.name))
+        if (!IsspecificRoom && !PaletteInfo.Palettes.ContainsKey(region.name))
         {
             PDEBUG.Log($"NOT FOUND | No palettes found for region: {region.name}");
             return false;
@@ -119,7 +114,7 @@ public partial class PaletteDrive
 
         string room = IsspecificRoom ? self.room.abstractRoom.name : region.name;
         currentRegionName = room;
-        activeRegionPalette = JsonGet.PaletteManager.Palettes[room];
+        activeRegionPalette = PaletteInfo.Palettes[room];
         totalPalettes = activeRegionPalette.palette.Count;
 
         if (totalPalettes == 0)
@@ -194,4 +189,9 @@ public partial class PaletteDrive
         lastPaletteTime = rainCycleLength * activeRegionPalette.time[index - 1];
         PDEBUG.Log($"Palette interval set: [{lastPaletteTime}, {nextPaletteTime}] for index {index} in region {currentRegionName}");
     }
+}
+
+public class PaintRoom
+{
+    
 }

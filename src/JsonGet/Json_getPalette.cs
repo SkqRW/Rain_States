@@ -12,7 +12,6 @@ namespace JsonGet;
 
 public static class PaletteManager
 {
-    private static readonly Dictionary<string, RoomChange.PaletteData> _allPalettes = new Dictionary<string, RoomChange.PaletteData>();
     private static readonly Dictionary<string, FileSystemWatcher> _watchers = new Dictionary<string, FileSystemWatcher>();
     private static readonly ConcurrentQueue<string> _reloadQueue = new ConcurrentQueue<string>();
     private static readonly Dictionary<string, DateTime> _lastLoadTimes = new Dictionary<string, DateTime>();
@@ -23,7 +22,6 @@ public static class PaletteManager
     /// <summary>
     /// Obtiene todas las paletas cargadas desde todos los mods activos
     /// </summary>
-    public static Dictionary<string, RoomChange.PaletteData> Palettes => _allPalettes;
 
     /// <summary>
     /// Evento que se dispara cuando se recarga una paleta
@@ -42,15 +40,15 @@ public static class PaletteManager
     {
         BepInEx.Logging.Logger.CreateLogSource("PaletteManager").LogWarning("PaletteManager already initialized. Reloading...");
             
-        _allPalettes.Clear();
+        PaletteInfo._allPalettes.Clear();
 
         // Escanear todos los mods activos
         ScanAllActiveMods();
 
-        BepInEx.Logging.Logger.CreateLogSource("PaletteManager").LogInfo($"Loaded {_allPalettes.Count} total palette entries from all mods");
+        BepInEx.Logging.Logger.CreateLogSource("PaletteManager").LogInfo($"Loaded {PaletteInfo._allPalettes.Count} total palette entries from all mods");
         
         // Log de todas las paletas cargadas
-        foreach (var kvp in _allPalettes)
+        foreach (var kvp in PaletteInfo._allPalettes)
         {
             string regionName = kvp.Key;
             var info = kvp.Value;
@@ -192,14 +190,14 @@ public static class PaletteManager
             string regionKey = kvp.Key;
             
             // Si ya existe, loguear que se está sobrescribiendo
-            if (_allPalettes.ContainsKey(regionKey))
+            if (PaletteInfo._allPalettes.ContainsKey(regionKey))
             {
                 BepInEx.Logging.Logger.CreateLogSource("PaletteManager").LogWarning(
                     $"Overwriting palette for region '{regionKey}' with version from mod '{modId}'"
                 );
             }
 
-            _allPalettes[regionKey] = kvp.Value;
+            PaletteInfo._allPalettes[regionKey] = kvp.Value;
         }
 
         // Actualizar tiempo de última carga
@@ -289,9 +287,9 @@ public static class PaletteManager
                 try
                 {
                     string currentRegion = PaletteDrive.GetCurrentRegionName();
-                    if (!string.IsNullOrEmpty(currentRegion) && _allPalettes.ContainsKey(currentRegion))
+                    if (!string.IsNullOrEmpty(currentRegion) && PaletteInfo._allPalettes.ContainsKey(currentRegion))
                     {
-                        PaletteDrive.SetRegionPalette(_allPalettes[currentRegion]);
+                        PaletteDrive.SetRegionPalette(PaletteInfo._allPalettes[currentRegion]);
                     }
                 }
                 catch (Exception ex)
