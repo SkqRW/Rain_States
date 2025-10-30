@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace RoomChange;
 
@@ -12,8 +14,8 @@ public static class PaletteInfo
 {
     public static Dictionary<string, RoomChange.PaletteData> Palettes = new Dictionary<string, RoomChange.PaletteData>();
 
-    
-    public static bool IsRegionPaletteAvailable(Room self)
+
+    public static bool IsRegionPaletteAvailable(Room self, ref string room)
     {
         if (PaletteInfo.Palettes == null)
         {
@@ -37,10 +39,31 @@ public static class PaletteInfo
             return false;
         }
 
-        string room = IsspecificRoom ? self.abstractRoom.name : region.name;
+        room = IsspecificRoom ? self.abstractRoom.name : region.name;
         PaletteDrive.currentRegionName = room;
 
-        return PaletteDrive.applychange(room, IsspecificRoom);
+        if (Palettes[room].palette.Count == 0)
+        {
+            PDEBUG.Log($"Palette not found for {room}");
+            return false;
+        }
+
+        return true;
     }
 
+    public static void CalculatePaletteIntervals(float timeNow, float rainCycleLength, PaletteData data, ref int currentPaletteIndex, ref float nextPaletteTime)
+    {
+        for (int i = 1; i < data.palette.Count; i++)
+        {
+            float endTimePalette = data.time[i] * rainCycleLength;
+            if (timeNow < endTimePalette)
+            {
+                currentPaletteIndex = i - 1;
+                nextPaletteTime = endTimePalette;
+                return;
+            }
+        }
+        currentPaletteIndex = data.palette.Count - 1;
+        nextPaletteTime = Mathf.Infinity;
+    }
 }

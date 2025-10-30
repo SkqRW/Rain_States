@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using UnityEngine;
 
 
@@ -11,12 +12,10 @@ public partial class PaletteDrive
 
     private static RoomChange.PaletteData activeRegionPalette;
     public static string currentRegionName;
-    private static int rainCycleLength;
+    private static float rainCycleLength;
     private static float nextPaletteTime;
     private static float lastPaletteTime;
     private static float actualTime;
-    private static bool devMode = true;
-    private static bool firstTime = true;
 
     private static bool DEBUGflagRegion = true;
     private static bool DEBUGflagCycle = true;
@@ -45,7 +44,8 @@ public partial class PaletteDrive
         
         rainCycleLength = self.room.world.rainCycle.cycleLength;
 
-        if (!PaletteInfo.IsRegionPaletteAvailable(self.room))
+        string room = "";
+        if (!PaletteInfo.IsRegionPaletteAvailable(self.room, ref room))
         {
             if (DEBUGflagRegion)
             {
@@ -55,7 +55,12 @@ public partial class PaletteDrive
             return;
         }
 
-        
+        activeRegionPalette = PaletteInfo.Palettes[room];
+        totalPalettes = activeRegionPalette.palette.Count;
+        PaletteInfo.CalculatePaletteIntervals(actualTime, rainCycleLength, activeRegionPalette, ref paletteIndex, ref nextPaletteTime);
+        RefreshPaletteInterval(paletteIndex);
+
+
 
         if (paletteIndex >= totalPalettes)
         {
@@ -73,55 +78,18 @@ public partial class PaletteDrive
         // If have more than 1, just change to the next palette
         actualTime = self.room.world.rainCycle.timer;
         float paletteBlend = RateChanges.Linear(actualTime, nextPaletteTime, lastPaletteTime);
-        paletteBlend = Mathf.Clamp01(paletteBlend);
 
-        //Yeah, I know this is a bit hacky, but it works for now
-        //Later see how to overrise the main palette and fade palette to the custom ones
-        int prevIndex = Mathf.Max(0, paletteIndex - 1);
-        int currIndex = Mathf.Clamp(paletteIndex, 0, activeRegionPalette.palette.Count - 1);
-        self.room.game.cameras[0].ChangeBothPalettes(activeRegionPalette.palette[prevIndex], activeRegionPalette.palette[currIndex], paletteBlend);
+        int prevIndex = Math.Max(paletteIndex, 0);
+        int nextIndex = Math.Min(paletteIndex + 1, activeRegionPalette.palette.Count - 1);
+        self.room.game.cameras[0].ChangeBothPalettes(activeRegionPalette.palette[prevIndex], activeRegionPalette.palette[nextIndex], paletteBlend);
 
         //Custom Debug
         if (self.room.game.devToolsActive)
         {
-            PDEBUG.Log($"Region: {self.room.world.region.name}, {self.room.abstractRoom.name} | paletteIndex: [{paletteIndex - 1} - {paletteIndex}] | The percent of blend is  %{paletteBlend * 100}: ");
+            PDEBUG.Log($"Region: {self.room.world.region.name}, {self.room.abstractRoom.name} | paletteIndex: [{prevIndex} - {nextIndex}] -> {paletteIndex} | The percent of blend is  %{paletteBlend * 100}:  ");
+            PDEBUG.Log($"Last Palette Time: {lastPaletteTime}, Next Palette Time: {nextPaletteTime}, Actual Time: {actualTime}");
         }    
-
-        if (paletteBlend > 1)
-        {
-            PDEBUG.Log($"Palette blend is greater than 1, updating palette index: {paletteIndex}");
-            RefreshPaletteInterval(paletteIndex + 1);
-            PDEBUG.Log($"|||| Palette blend is greater than 1, updating palette index: {paletteIndex}");
-        }
     }
-
-    
-    
-    public static bool applychange(string room, bool IsspecificRoom)
-    {
-        activeRegionPalette = PaletteInfo.Palettes[room];
-        totalPalettes = activeRegionPalette.palette.Count;
-
-        if (totalPalettes == 0)
-        {
-            PDEBUG.Log($"Palette not found for {room}");
-            return false;
-        }
-
-        if (totalPalettes == 1)
-        {
-            PDEBUG.Log($"ONLY ONE PALETTE | No need to cycle palettes for region: {room}");
-            paletteIndex = totalPalettes; //Skip the update
-            return false;
-        }
-
-        PDEBUG.Log($"[{IsspecificRoom}] Made a refresh in the region {currentRegionName}, now actual is {nextPaletteTime} and prev is {lastPaletteTime}");
-        NewRangePalette();
-        PDEBUG.Log($"The cycle time is {rainCycleLength} and actualTime are {actualTime}");
-        
-        return true;
-    }
-
 
     public static string GetCurrentRegionName()
     {
@@ -131,27 +99,10 @@ public partial class PaletteDrive
     {
         activeRegionPalette = newPaletteInfo;
         totalPalettes = activeRegionPalette.palette.Count;
-        NewRangePalette();
+        PaletteInfo.CalculatePaletteIntervals(actualTime, rainCycleLength, activeRegionPalette, ref paletteIndex, ref nextPaletteTime);
     }
 
-    private static void NewRangePalette()
-    {
-        for (int i = 0; i < totalPalettes; i++)
-        {
-            float endTimePalette = GetRelativeCycleTimeConfig(activeRegionPalette.time[i], rainCycleLength);
-            if (actualTime < endTimePalette)
-            {
-                RefreshPaletteInterval(i);
-                return;
-            }
-        }
-        paletteIndex = totalPalettes;
-    }
 
-    private static float GetRelativeCycleTimeConfig(float time, int cycleLength)
-    {
-        return time * cycleLength;
-    }
 
     private static void RefreshPaletteInterval(int index)
     {
@@ -160,18 +111,20 @@ public partial class PaletteDrive
             PDEBUG.LogWarn($"Index {index} out of bounds in Palette Interval");
             return;
         }
-        
-        nextPaletteTime = GetRelativeCycleTimeConfig(activeRegionPalette.time[index], rainCycleLength);
-        lastPaletteTime = 0;
-        paletteIndex = index;
 
-        if (index == 0)
+        if(index == activeRegionPalette.palette.Count - 1)
         {
-            // Palette interval here is [0, 0]
-            PDEBUG.LogWarn($"Palette index 0 detected — forcing single-palette mode\"");
+            // Last palette, no next
+            PDEBUG.Log($"Last palette index {index} reached for region {currentRegionName}. No next palette.");
+            nextPaletteTime = Mathf.Infinity;
+            lastPaletteTime = rainCycleLength * activeRegionPalette.time[index - 1];
+            paletteIndex = index;
             return;
         }
-        lastPaletteTime = rainCycleLength * activeRegionPalette.time[index - 1];
+
+        nextPaletteTime = activeRegionPalette.time[index + 1] * rainCycleLength;
+        lastPaletteTime = rainCycleLength * activeRegionPalette.time[index];
+        paletteIndex = index;
         PDEBUG.Log($"Palette interval set: [{lastPaletteTime}, {nextPaletteTime}] for index {index} in region {currentRegionName}");
     }
 }
