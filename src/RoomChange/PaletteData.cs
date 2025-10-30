@@ -52,7 +52,6 @@ public static class PaletteInfo
         }
 
         room = IsspecificRoom ? self.abstractRoom.name : region.name;
-        PaletteDrive.currentRegionName = room;
 
         if (Palettes[room].BasePalette.Count == 0)
         {

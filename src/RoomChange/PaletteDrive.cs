@@ -8,15 +8,14 @@ namespace RoomChange;
 public partial class PaletteDrive
 {
     private static int paletteIndex = 1;
-
     private static RoomChange.PaletteData activeRegionPalette;
-    public static string currentRegionName;
     private static float nextPaletteTime;
     private static float lastPaletteTime;
     private static float actualTime;
 
-    private static bool DEBUGflagRegion = true;
-    private static bool DEBUGflagCycle = true;
+
+
+    private static bool DEBUG = true;
 
     public static void Terminate()
     {
@@ -43,7 +42,7 @@ public partial class PaletteDrive
         string room = "";
         if (!PaletteInfo.IsRegionPaletteAvailable(self.room, ref room))
         {
-            if (DEBUGflagRegion)
+            if (DEBUG)
             {
                 PDEBUG.Log("Palette Config not available, using original method.");
             }
@@ -63,11 +62,10 @@ public partial class PaletteDrive
 
         if (paletteIndex >= activeRegionPalette.BaseLength)
         {
-            if (DEBUGflagCycle)
+            if (DEBUG)
             {
                 PDEBUG.Log("No more palettes to apply for region: " + self.room.world.region.name);
                 self.room.game.cameras[0].ChangeMainPalette(activeRegionPalette.BasePalette[activeRegionPalette.BaseLength - 1]);
-                DEBUGflagCycle = false;
             }
             return;
         }
@@ -91,17 +89,6 @@ public partial class PaletteDrive
             PDEBUG.Log($"Last Palette Time: {lastPaletteTime}, Next Palette Time: {nextPaletteTime}, Actual Time: {actualTime}");
         }    
     }
-
-    public static string GetCurrentRegionName()
-    {
-        return currentRegionName;
-    }
-
-    public static void SetRegionPalette(RoomChange.PaletteData newPaletteInfo)
-    {
-        activeRegionPalette = newPaletteInfo;
-    }
-    
 }
 
 public static class PaintRoom
