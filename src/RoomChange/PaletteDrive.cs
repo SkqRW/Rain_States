@@ -79,16 +79,24 @@ public partial class PaletteDrive
         int prevIndex = Math.Max(paletteIndex, 0);
         int nextIndex = Math.Min(paletteIndex + 1, activeRegionPalette.BasePalette.Count - 1);
 
-        //This is only need 2 integer and blend mmm
+        //Only apply to 1 player camera, will be compact with scroll screen?, later will care
         PaintRoom.ChangeBothPalettes(self.room.game.cameras[0], activeRegionPalette.BasePalette[prevIndex], activeRegionPalette.BasePalette[nextIndex], paletteBlend);
-        
-        
+
+
+
         //Custom Debug
         if (self.room.game.devToolsActive)
         {
-            PDEBUG.Log($"Region: {self.room.world.region.name}, {self.room.abstractRoom.name} | paletteIndex: [{prevIndex} - {nextIndex}] -> {paletteIndex} | The percent of blend is  %{paletteBlend * 100}:  ");
-            PDEBUG.Log($"Last Palette Time: {lastPaletteTime}, Next Palette Time: {nextPaletteTime}, Actual Time: {actualTime}");
-        }    
+            //PDEBUG.Log($"Region: {self.room.world.region.name}, {self.room.abstractRoom.name} | paletteIndex: [{prevIndex} - {nextIndex}] -> {paletteIndex} | The percent of blend is  %{paletteBlend * 100}:  ");
+            //PDEBUG.Log($"Last Palette Time: {lastPaletteTime}, Next Palette Time: {nextPaletteTime}, Actual Time: {actualTime}");
+        }
+
+
+        /*
+        int prevEffectIndex = Math.Max(paletteIndex, 0);
+        int nextEffectIndex = Math.Min(paletteIndex + 1, activeRegionPalette.EffectAPalette.Count - 1);
+        PaintRoom.ChangeBothEffectPalettes(self.room.game.cameras[0], activeRegionPalette.EffectAPalette[prevEffectIndex], activeRegionPalette.EffectAPalette[nextEffectIndex]);
+        */
     }
 }
 
@@ -99,4 +107,11 @@ public static class PaintRoom
         // Painful easy...
         camera.ChangeBothPalettes(prevPalette, nextPalette, blend);
     }
+
+    public static void ChangeBothEffectPalettes(RoomCamera camera, int A, int B)
+    {
+        // Painful hard...
+        camera.ApplyEffectColorsToAllPaletteTextures(A, B);
+    }
+
 }

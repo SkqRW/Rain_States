@@ -49,9 +49,11 @@ public static class PaletteManager
         {
             string regionName = kvp.Key;
             var info = kvp.Value;
-            string paletteStr = string.Join(", ", info.BasePalette);
-            string timeStr = string.Join(", ", info.BaseTime);
-            log.LogInfo($"Region: {regionName} | Palette: [{paletteStr}] | Time: [{timeStr}]");
+            string paletteStr = (info.TerrainPalette != null ? string.Join(", ", info.BasePalette) : "N/A");
+            string timeStr = (info.BaseTime != null ? string.Join(", ", info.BaseTime) : "N/A");
+            string terrainStr = (info.TerrainPalette != null ? string.Join(", ", info.TerrainPalette) : "N/A");
+            string terrainTimeStr = (info.TerrainTime != null ? string.Join(", ", info.TerrainTime) : "N/A");
+            log.LogInfo($"Region: {regionName} | Palette: [{paletteStr}] | Time: [{timeStr}] | Terrain: [{terrainStr}] | TerrainTime: [{terrainTimeStr}]");
         }
     }
 

@@ -7,13 +7,37 @@ namespace RoomChange;
 
 public class PaletteData
 {
-    [JsonProperty("palette")]
+    [JsonProperty("palette", NullValueHandling = NullValueHandling.Ignore)]
     public List<int> BasePalette { get; set; }
 
-    [JsonProperty("time")]
+    [JsonProperty("time", NullValueHandling = NullValueHandling.Ignore)]
     public List<float> BaseTime { get; set; }
 
-    public int BaseLength => BasePalette.Count;
+    [JsonProperty("terrain", NullValueHandling = NullValueHandling.Ignore)]
+    public List<string> TerrainPalette { get; set; }
+
+    [JsonProperty("terrainTime", NullValueHandling = NullValueHandling.Ignore)]
+    public List<float> TerrainTime { get; set; }
+
+
+    [JsonProperty("effectA", NullValueHandling = NullValueHandling.Ignore)]
+    public List<Color> EffectAPalette { get; set; }
+
+    [JsonProperty("effectATime", NullValueHandling = NullValueHandling.Ignore)]
+    public List<float> EffectATime { get; set; }
+
+     [JsonProperty("effectB", NullValueHandling = NullValueHandling.Ignore)]
+    public List<Color> EffectBPalette { get; set; }
+
+    [JsonProperty("effectBTime", NullValueHandling = NullValueHandling.Ignore)]
+    public List<float> EffectBTime { get; set; }
+
+    public int BaseLength => BasePalette?.Count ?? 0;
+
+    public int TerrainLength => TerrainPalette?.Count ?? 0;
+
+    public int EffectLength => EffectAPalette?.Count ?? 0;
+
 }
 
 public static class PaletteInfo
@@ -80,5 +104,10 @@ public static class PaletteInfo
         nextPaletteTime = Mathf.Infinity;
     }
 
-    
+
+    public static void CalculatePaletteEffectIntervals(float timeNow, PaletteData data, ref int currentPaletteIndex, ref float lastPaletteTime, ref float nextPaletteTime)
+    {
+        
+    }
+
 }

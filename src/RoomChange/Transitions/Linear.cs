@@ -16,7 +16,7 @@ public class Linear
         }
 
         float delta = (now - pretime) / (time - pretime);
-        PDEBUG.Log($"Actual Time: {now}, nextPaletteTime: {time}, prevPaletteTime: {pretime}, paletteBlend: %{delta * 100}");
+        //PDEBUG.Log($"Actual Time: {now}, nextPaletteTime: {time}, prevPaletteTime: {pretime}, paletteBlend: %{delta * 100}");
         return delta;
     }
 }
