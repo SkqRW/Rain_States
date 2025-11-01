@@ -70,7 +70,7 @@ public partial class DevTools
 
     public static void Log(string message)
     {
-        //UnityEngine.Debug.Log($"[{Plugin.NAME}] {message}");
+        UnityEngine.Debug.Log($"[{Plugin.NAME}] {message}");
     }
 
     public static void LogWarn(string message)

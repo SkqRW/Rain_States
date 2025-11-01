@@ -21,13 +21,13 @@ public class PaletteData
 
 
     [JsonProperty("effectA", NullValueHandling = NullValueHandling.Ignore)]
-    public List<int> EffectAPalette { get; set; }
+    public List<string> EffectAPalette { get; set; }
 
     [JsonProperty("effectATime", NullValueHandling = NullValueHandling.Ignore)]
     public List<float> EffectATime { get; set; }
 
      [JsonProperty("effectB", NullValueHandling = NullValueHandling.Ignore)]
-    public List<int> EffectBPalette { get; set; }
+    public List<string> EffectBPalette { get; set; }
 
     [JsonProperty("effectBTime", NullValueHandling = NullValueHandling.Ignore)]
     public List<float> EffectBTime { get; set; }
@@ -169,14 +169,14 @@ public static class PaletteInfo
         return new PaletteSequence<int>(data.BasePalette, data.BaseTime);
     }
 
-    public static PaletteSequence<int> GetEffectAPaletteSequence(PaletteData data)
+    public static PaletteSequence<string> GetEffectAPaletteSequence(PaletteData data)
     {
-        return new PaletteSequence<int>(data.EffectAPalette, data.EffectATime);
+        return new PaletteSequence<string>(data.EffectAPalette, data.EffectATime);
     }
 
-    public static PaletteSequence<int> GetEffectBPaletteSequence(PaletteData data)
+    public static PaletteSequence<string> GetEffectBPaletteSequence(PaletteData data)
     {
-        return new PaletteSequence<int>(data.EffectBPalette, data.EffectBTime);
+        return new PaletteSequence<string>(data.EffectBPalette, data.EffectBTime);
     }
 
     public static PaletteSequence<string> GetTerrainPaletteSequence(PaletteData data)

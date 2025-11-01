@@ -29,19 +29,21 @@ Rain States will **automatically detect and load** this file when the game start
     "UW": {
         "palette": [1, 20, 3],
         "time": [0, 0.6, 1.0],
-        "effectA": [0, 5, 10],
+        "effectA": ["#FF5500", "#00AAFF", "#FFFFFF"],
         "effectATime": [0, 0.5, 1.0]
     },
     "UW_A13": {
         "palette": [11, 5, 1],
-        "time": [0, 0.90, 1.0]
+        "time": [0, 0.90, 1.0],
+        "effectB": ["FF0000", "00FF00", "0000FF"],
+        "effectBTime": [0, 0.5, 1.0]
     },
     "SU": {
         "palette": [1, 12, 11],
         "time": [0, 0.5, 0.6],
-        "effectA": [2, 8],
+        "effectA": ["#FFA500", "#800080"],
         "effectATime": [0, 1.0],
-        "effectB": [1, 3, 7],
+        "effectB": ["#FF1493", "#1E90FF", "#32CD32"],
         "effectBTime": [0, 0.4, 1.0]
     }
 }
@@ -59,19 +61,26 @@ Each key in the JSON file should correspond to a region code (e.g., `UW` for The
 
 ### Effect Palettes (Optional)
 
-Effect palettes control additional visual effects independent from the main palette:
+Effect palettes control additional visual effects independent from the main palette. **Effect colors are specified using hexadecimal color codes**, allowing you to create custom colors:
 
-* **`effectA`**: A list of effect A palette IDs that will be applied over time.
-* **`effectATime`**: A list of decimal values (between 0 and 1) defining when each effect A palette should be applied.
+* **`effectA`**: A list of custom colors in hexadecimal format (e.g., `"#FF5500"` or `"FF5500"`) that will be applied over time.
+* **`effectATime`**: A list of decimal values (between 0 and 1) defining when each effect A color should be applied.
   * This first value must always start at 0.
 
-* **`effectB`**: A list of effect B palette IDs that will be applied over time.
-* **`effectBTime`**: A list of decimal values (between 0 and 1) defining when each effect B palette should be applied.
+* **`effectB`**: A list of custom colors in hexadecimal format (e.g., `"#00AAFF"` or `"00AAFF"`) that will be applied over time.
+* **`effectBTime`**: A list of decimal values (between 0 and 1) defining when each effect B color should be applied.
   * This first value must always start at 0.
 
-Effect palettes allow you to change visual effects like fog, lighting, or atmospheric colors **independently** from the main room palette, giving you fine-grained control over the room's appearance throughout the cycle.
+**Hexadecimal Color Format:**
+- Supported formats: `"#RRGGBB"`, `"RRGGBB"`, `"#RGB"`, or `"RGB"`
+- Examples:
+  - `"#FF0000"` or `"FF0000"` = Red
+  - `"#00FF00"` or `"00FF00"` = Green  
+  - `"#0000FF"` or `"0000FF"` = Blue
+  - `"#FFA500"` = Orange
+  - `"#F0F"` or `"#FF00FF"` = Magenta
 
-> **Note WIP:** Effect palette IDs currently range from **0-21** (the available in-game effect colors). This will change later for support for custom hexadecimal colors and additional transition types is planned for future updates.
+Effect palettes allow you to change visual effects like fog, lighting, or atmospheric colors **independently** from the main room palette. The mod automatically **blends between adjacent colors** for smooth transitions, giving you fine-grained control over the room's appearance throughout the cycle.
 
 ### Rules
 

@@ -128,7 +128,7 @@ public partial class PaletteDrive
 
         // For effect palettes, we typically apply the current palette directly
         // You can modify this to support blending if needed
-        PaintRoom.ChangeEffectAPalette(camera, sequence.Palettes[interval.PrevIndex]);
+        PaintRoom.ChangeEffectAPalette(camera, sequence.Palettes[interval.PrevIndex], sequence.Palettes[interval.NextIndex], interval.BlendFactor);
 
         if (DEBUG)
         {
@@ -146,11 +146,17 @@ public partial class PaletteDrive
 
         var interval = PaletteInfo.CalculateIntervals(currentTime, sequence);
 
-        PaintRoom.ChangeEffectBPalette(camera, sequence.Palettes[interval.PrevIndex]);
+        // Apply effect B with blending between two colors
+        PaintRoom.ChangeEffectBPalette(
+            camera, 
+            sequence.Palettes[interval.PrevIndex], 
+            sequence.Palettes[interval.NextIndex], 
+            interval.BlendFactor
+        );
 
         if (DEBUG)
         {
-            PDEBUG.Log($"Applying Effect B Palette: index {interval.PrevIndex} (palette {sequence.Palettes[interval.PrevIndex]}) | blend: {interval.BlendFactor:F2}");
+            PDEBUG.Log($"Applying Effect B Palette: [{interval.PrevIndex}] -> [{interval.NextIndex}] | blend: {interval.BlendFactor:F2}");
         }
     }
 
@@ -182,6 +188,46 @@ public static class PaintRoom
     private static bool DEBUG = true;
 
     /// <summary>
+    /// Convert hexadecimal color string to Unity Color
+    /// Supports formats: "#RRGGBB", "RRGGBB", "#RGB", "RGB"
+    /// </summary>
+    public static Color HexToColor(string hex)
+    {
+        // Remove # if present
+        if (hex.StartsWith("#"))
+        {
+            hex = hex.Substring(1);
+        }
+
+        // Expand short format (RGB -> RRGGBB)
+        if (hex.Length == 3)
+        {
+            hex = string.Format("{0}{0}{1}{1}{2}{2}", hex[0], hex[1], hex[2]);
+        }
+
+        // Parse hex string
+        if (hex.Length == 6)
+        {
+            try
+            {
+                int r = Convert.ToInt32(hex.Substring(0, 2), 16);
+                int g = Convert.ToInt32(hex.Substring(2, 2), 16);
+                int b = Convert.ToInt32(hex.Substring(4, 2), 16);
+                
+                return new Color(r / 255f, g / 255f, b / 255f, 1f);
+            }
+            catch (Exception e)
+            {
+                PDEBUG.Log($"Failed to parse hex color '{hex}': {e.Message}. Using white as fallback.");
+                return Color.white;
+            }
+        }
+
+        PDEBUG.Log($"Invalid hex color format '{hex}'. Expected format: #RRGGBB or RRGGBB. Using white as fallback.");
+        return Color.white;
+    }
+
+    /// <summary>
     /// Change both palettes with blending for smooth transitions
     /// </summary>
     public static void ChangeBothPalettes(RoomCamera camera, int prevPalette, int nextPalette, float blend)
@@ -190,23 +236,29 @@ public static class PaintRoom
     }
 
     /// <summary>
-    /// Change Effect A palette by modifying the fade texture
+    /// Change Effect A palette with color blending between two custom colors
     /// </summary>
-    public static void ChangeEffectAPalette(RoomCamera camera, int paletteIndex)
+    public static void ChangeEffectAPalette(RoomCamera camera, string prevColorHex, string nextColorHex, float blendFactor)
     {
         Texture2D texture = camera.fadeTexA;
         
-        // Get the effect colors from the all effects texture (2x2 pixel block)
-        Color[] effectColors = RoomCamera.allEffectColorsTexture.GetPixels(paletteIndex * 2, 0, 2, 2, 0);
+        // Parse hex colors
+        Color prevColor = HexToColor(prevColorHex);
+        Color nextColor = HexToColor(nextColorHex);
         
+        // Blend between the two colors
+        Color blendedColor = Color.Lerp(prevColor, nextColor, blendFactor);
+
+        // Create 2x2 color array with the blended color
+        Color[] effectColors = new Color[4]
+        {
+            blendedColor, blendedColor,
+            blendedColor, blendedColor
+        };
+
         if (DEBUG)
         {
-            string colorDebug = "";
-            foreach (Color c in effectColors)
-            {
-                colorDebug += $"R:{c.r * 255:F0}, G:{c.g * 255:F0}, B:{c.b * 255:F0} | ";
-            }
-            PDEBUG.Log($"Effect A Palette [{paletteIndex}]: {colorDebug}");
+            PDEBUG.Log($"Effect A: Blending [{prevColorHex}] -> [{nextColorHex}] at {blendFactor:F2} = RGB({blendedColor.r * 255:F0}, {blendedColor.g * 255:F0}, {blendedColor.b * 255:F0})");
         }
         
         // Apply the effect colors to the fade texture (effect color is a 2x2 block)
@@ -217,23 +269,29 @@ public static class PaintRoom
     }
 
     /// <summary>
-    /// Change Effect B palette (similar to Effect A)
+    /// Change Effect B palette with color blending between two custom colors
     /// </summary>
-    public static void ChangeEffectBPalette(RoomCamera camera, int paletteIndex)
+    public static void ChangeEffectBPalette(RoomCamera camera, string prevColorHex, string nextColorHex, float blendFactor)
     {
         Texture2D texture = camera.fadeTexB;
         
-        // Get the effect colors from the all effects texture (2x2 pixel block)
-        Color[] effectColors = RoomCamera.allEffectColorsTexture.GetPixels(paletteIndex * 2, 0, 2, 2, 0);
+        // Parse hex colors
+        Color prevColor = HexToColor(prevColorHex);
+        Color nextColor = HexToColor(nextColorHex);
+        
+        // Blend between the two colors
+        Color blendedColor = Color.Lerp(prevColor, nextColor, blendFactor);
+
+        // Create 2x2 color array with the blended color
+        Color[] effectColors = new Color[4]
+        {
+            blendedColor, blendedColor,
+            blendedColor, blendedColor
+        };
         
         if (DEBUG)
         {
-            string colorDebug = "";
-            foreach (Color c in effectColors)
-            {
-                colorDebug += $"R:{c.r * 255:F0}, G:{c.g * 255:F0}, B:{c.b * 255:F0} | ";
-            }
-            PDEBUG.Log($"Effect B Palette [{paletteIndex}]: {colorDebug}");
+            PDEBUG.Log($"Effect B: Blending [{prevColorHex}] -> [{nextColorHex}] at {blendFactor:F2} = RGB({blendedColor.r * 255:F0}, {blendedColor.g * 255:F0}, {blendedColor.b * 255:F0})");
         }
         
         // Apply the effect colors to the fade texture
