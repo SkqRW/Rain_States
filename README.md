@@ -16,7 +16,10 @@ YourMod/
 
 ## TO DO
 
-- [ ] Add efect colot set up
+- [ ] Add efect colot set up, with custom color and transitions
+- [ ] Add tags for different systems of transitions
+- [ ] New file sistem to modularize cycles longers
+- [ ] Input Cycles mod random option (IAHunter thing that i will done into a future)
 - [ ] Add more custom devlogs in game
 - [ ] Implement a machineconector for options i guess??
 - [ ] Add more transition between palettes and his custom keys in the json

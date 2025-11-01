@@ -13,7 +13,7 @@ public partial class DevTools
     public static void Init()
     {
         //On.PlayerGraphics.DrawSprites += PlayerGraphics_DrawSprites;
-        On.Player.Update += Player_Update;
+        //On.Player.Update += Player_Update;
     }
     public static bool notify = true;
     public static int devTimer = 0;
@@ -70,7 +70,7 @@ public partial class DevTools
 
     public static void Log(string message)
     {
-        UnityEngine.Debug.Log($"[{Plugin.NAME}] {message}");
+        //UnityEngine.Debug.Log($"[{Plugin.NAME}] {message}");
     }
 
     public static void LogWarn(string message)

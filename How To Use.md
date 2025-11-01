@@ -1,5 +1,7 @@
 # How to Use Rain States
 
+> **Version:** 0.2.5 | **Last Updated:** November 2025
+
 This tutorial will show you how to use Rain States in your mod. It assumes you have already added the mod as a **required dependency**.
 
 ## Setup
@@ -13,6 +15,12 @@ YourModName/
 ```
 
 Rain States will **automatically detect and load** this file when the game starts.
+
+> **Note:** This mod accepts any file that **starts with** `RainState` and **ends with** `.json`. All of the following are valid:
+> - `RainState_SU.json`
+> - `RainState_Night.json`
+> - `RainStateWatcher.json`
+> - `RainStates.json`
 
 ## Example
 
@@ -62,6 +70,8 @@ Effect palettes control additional visual effects independent from the main pale
   * This first value must always start at 0.
 
 Effect palettes allow you to change visual effects like fog, lighting, or atmospheric colors **independently** from the main room palette, giving you fine-grained control over the room's appearance throughout the cycle.
+
+> **Note WIP:** Effect palette IDs currently range from **0-21** (the available in-game effect colors). This will change later for support for custom hexadecimal colors and additional transition types is planned for future updates.
 
 ### Rules
 

@@ -242,7 +242,7 @@ public static class PaletteManager
     /// </summary>
     private static void OnFileChanged(object sender, FileSystemEventArgs e)
     {
-        if (Path.GetFileName(e.FullPath).StartsWith("RainStates") && e.FullPath.EndsWith(".json"))
+        if (Path.GetFileName(e.FullPath).StartsWith("RainState") && e.FullPath.EndsWith(".json"))
         {
             // Verificar si es la versión más reciente
             if (IsMostRecentFile(e.FullPath))
