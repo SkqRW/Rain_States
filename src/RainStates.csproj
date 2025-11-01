@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <LangVersion>Latest</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="../lib/*.dll">
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+	<Target Name="PostBuildCopyMod" AfterTargets="Build">
+		<Copy SourceFiles="$(TargetDir)$(TargetFileName)"
+			  DestinationFolder="C:\Program Files (x86)\Steam\steamapps\common\Rain World\RainWorld_Data\StreamingAssets\mods\Rain States\plugins"
+			  OverwriteReadOnlyFiles="true" />
+	</Target>
+
+	<Target Name="PostBuildCopyInternal" AfterTargets="Build">
+		<Copy SourceFiles="$(TargetDir)$(TargetFileName)"
+			  DestinationFolder="$(ProjectDir)\..\mod\plugins"
+			  OverwriteReadOnlyFiles="true" />
+	</Target>
+
+ 
+</Project>

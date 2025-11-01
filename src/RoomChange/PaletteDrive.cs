@@ -50,7 +50,7 @@ public partial class PaletteDrive
             return;
         }
 
-        // Don't sure if there any moment this will change in game (probably with dev tools through)
+        // Don't sure if there any moment camera will change in game (probably with dev tools through)
         // But i'm gonna put that update here 
         PaletteInfo.SetRainCycleLength(self.room.world.rainCycle.cycleLength);
 
@@ -91,12 +91,17 @@ public partial class PaletteDrive
             //PDEBUG.Log($"Last Palette Time: {lastPaletteTime}, Next Palette Time: {nextPaletteTime}, Actual Time: {actualTime}");
         }
 
+        if (activeRegionPalette.EffectALength > 0)
+        {
+            PaletteInfo.CalculatePaletteEffectIntervals(actualTime, activeRegionPalette, ref paletteIndex, ref lastPaletteTime, ref nextPaletteTime);
+            int prevEffectIndex = Math.Max(paletteIndex, 0);
+            int nextEffectIndex = Math.Min(paletteIndex + 1, activeRegionPalette.EffectAPalette.Count - 1);
+            PaintRoom.ChangeEffectAPalette(self.room.game.cameras[0], activeRegionPalette.EffectAPalette[prevEffectIndex]);
+            PDEBUG.Log($"Changing Effect A Palette from index {prevEffectIndex} to {nextEffectIndex} with blend %{paletteBlend * 100} | index {activeRegionPalette.EffectAPalette[prevEffectIndex]}");
 
-        /*
-        int prevEffectIndex = Math.Max(paletteIndex, 0);
-        int nextEffectIndex = Math.Min(paletteIndex + 1, activeRegionPalette.EffectAPalette.Count - 1);
-        PaintRoom.ChangeBothEffectPalettes(self.room.game.cameras[0], activeRegionPalette.EffectAPalette[prevEffectIndex], activeRegionPalette.EffectAPalette[nextEffectIndex]);
-        */
+        }
+
+
     }
 }
 
@@ -108,10 +113,22 @@ public static class PaintRoom
         camera.ChangeBothPalettes(prevPalette, nextPalette, blend);
     }
 
-    public static void ChangeBothEffectPalettes(RoomCamera camera, int A, int B)
+    public static void ChangeEffectAPalette(RoomCamera camera, int A)
     {
-        // Painful hard...
-        camera.ApplyEffectColorsToAllPaletteTextures(A, B);
+        Texture2D texture = camera.fadeTexA;
+        Color[] AA = RoomCamera.allEffectColorsTexture.GetPixels(A * 2, 0, 2, 2, 0);
+        string colors = "";
+        foreach (Color c in AA)
+        {
+            colors += $"R:{c.r * 255}, G:{c.g * 255}, B:{c.b * 255} | ";
+            //PDEBUG.Log($"Effect A Color: R:{c.r * 255}, G:{c.g * 255}, B:{c.b * 255}");
+        }
+        PDEBUG.Log($"Changing Effect A Palette to index: {A} and color {colors} ");
+        // Seem the effect color is a 2x2 block
+        texture.SetPixels(30, 4, 2, 2, AA, 0);
+        texture.SetPixels(30, 12, 2, 2, AA, 0);
+
+        camera.ApplyFade();
     }
 
 }

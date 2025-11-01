@@ -21,13 +21,13 @@ public class PaletteData
 
 
     [JsonProperty("effectA", NullValueHandling = NullValueHandling.Ignore)]
-    public List<Color> EffectAPalette { get; set; }
+    public List<int> EffectAPalette { get; set; }
 
     [JsonProperty("effectATime", NullValueHandling = NullValueHandling.Ignore)]
     public List<float> EffectATime { get; set; }
 
      [JsonProperty("effectB", NullValueHandling = NullValueHandling.Ignore)]
-    public List<Color> EffectBPalette { get; set; }
+    public List<int> EffectBPalette { get; set; }
 
     [JsonProperty("effectBTime", NullValueHandling = NullValueHandling.Ignore)]
     public List<float> EffectBTime { get; set; }
@@ -36,7 +36,7 @@ public class PaletteData
 
     public int TerrainLength => TerrainPalette?.Count ?? 0;
 
-    public int EffectLength => EffectAPalette?.Count ?? 0;
+    public int EffectALength => EffectAPalette?.Count ?? 0;
 
 }
 
@@ -107,7 +107,20 @@ public static class PaletteInfo
 
     public static void CalculatePaletteEffectIntervals(float timeNow, PaletteData data, ref int currentPaletteIndex, ref float lastPaletteTime, ref float nextPaletteTime)
     {
-        
+        for (int i = 1; i < data.EffectALength; i++)
+        {
+            float endTimePalette = data.EffectATime[i] * RainCycleLength;
+            if (timeNow < endTimePalette)
+            {
+                currentPaletteIndex = i - 1;
+                lastPaletteTime = data.EffectATime[currentPaletteIndex] * RainCycleLength;
+                nextPaletteTime = endTimePalette;
+                return;
+            }
+        }
+        currentPaletteIndex = data.EffectAPalette.Count - 1;
+        lastPaletteTime = RainCycleLength * data.EffectATime[currentPaletteIndex];
+        nextPaletteTime = Mathf.Infinity;
     }
 
 }
