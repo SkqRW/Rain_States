@@ -37,7 +37,41 @@ public class PaletteData
     public int TerrainLength => TerrainPalette?.Count ?? 0;
 
     public int EffectALength => EffectAPalette?.Count ?? 0;
+    public int EffectBLength => EffectBPalette?.Count ?? 0;
 
+}
+
+/// <summary>
+/// Represents generic palette sequence information with timing data
+/// </summary>
+public struct PaletteSequence<T>
+{
+    public List<T> Palettes;
+    public List<float> Times;
+    public int Length => Palettes?.Count ?? 0;
+
+    public PaletteSequence(List<T> palettes, List<float> times)
+    {
+        Palettes = palettes;
+        Times = times;
+    }
+
+    public bool IsValid() => Palettes != null && Times != null && Palettes.Count > 0 && Palettes.Count == Times.Count;
+}
+
+/// <summary>
+/// Information about palette intervals for blending
+/// </summary>
+public struct PaletteInterval
+{
+    public int CurrentIndex;
+    public int PrevIndex;
+    public int NextIndex;
+    public float LastTime;
+    public float NextTime;
+    public float BlendFactor;
+
+    public bool IsLastPalette;
 }
 
 public static class PaletteInfo
@@ -55,29 +89,28 @@ public static class PaletteInfo
     {
         if (PaletteInfo.Palettes == null)
         {
-            PDEBUG.Log("Palettes no cargadas aún.");
+            PDEBUG.Log("Palettes not loaded yet.");
             return false;
         }
         Region region = self.world.region;
-        bool IsspecificRoom = false;
+        bool isSpecificRoom = false;
 
-
-        // Especific room
+        // Check for specific room configuration
         if (PaletteInfo.Palettes.ContainsKey(self.abstractRoom.name))
         {
-            IsspecificRoom = true;
+            isSpecificRoom = true;
         }
 
-        // Region name
-        if (!IsspecificRoom && !PaletteInfo.Palettes.ContainsKey(region.name))
+        // Check for region configuration
+        if (!isSpecificRoom && !PaletteInfo.Palettes.ContainsKey(region.name))
         {
             PDEBUG.Log($"NOT FOUND | No palettes found for region: {region.name}");
             return false;
         }
 
-        room = IsspecificRoom ? self.abstractRoom.name : region.name;
+        room = isSpecificRoom ? self.abstractRoom.name : region.name;
 
-        if (Palettes[room].BasePalette.Count == 0)
+        if (Palettes[room].BasePalette == null || Palettes[room].BasePalette.Count == 0)
         {
             PDEBUG.Log($"Palette not found for {room}");
             return false;
@@ -86,41 +119,68 @@ public static class PaletteInfo
         return true;
     }
 
-    public static void CalculatePaletteIntervals(float timeNow, PaletteData data, ref int currentPaletteIndex, ref float lastPaletteTime, ref float nextPaletteTime)
+    /// <summary>
+    /// Generic method to calculate palette intervals for any palette sequence
+    /// </summary>
+    public static PaletteInterval CalculateIntervals<T>(float currentTime, PaletteSequence<T> sequence)
     {
-        for (int i = 1; i < data.BaseLength; i++)
+        if (!sequence.IsValid())
         {
-            float endTimePalette = data.BaseTime[i] * RainCycleLength;
-            if (timeNow < endTimePalette)
+            PDEBUG.Log("Invalid palette sequence provided.");
+            return default;
+        }
+
+        PaletteInterval interval = new PaletteInterval();
+
+        // Find the current palette interval based on time
+        for (int i = 1; i < sequence.Length; i++)
+        {
+            float endTimePalette = sequence.Times[i] * RainCycleLength;
+            if (currentTime < endTimePalette)
             {
-                currentPaletteIndex = i - 1;
-                lastPaletteTime = data.BaseTime[currentPaletteIndex] * RainCycleLength;
-                nextPaletteTime = endTimePalette;
-                return;
+                interval.CurrentIndex = i - 1;
+                interval.PrevIndex = Math.Max(interval.CurrentIndex, 0);
+                interval.NextIndex = Math.Min(interval.CurrentIndex + 1, sequence.Length - 1);
+                interval.LastTime = sequence.Times[interval.CurrentIndex] * RainCycleLength;
+                interval.NextTime = endTimePalette;
+                interval.BlendFactor = Transitions.Linear.GetBlend(currentTime, interval.LastTime, interval.NextTime);
+                interval.IsLastPalette = false;
+                return interval;
             }
         }
-        currentPaletteIndex = data.BasePalette.Count - 1;
-        lastPaletteTime = RainCycleLength * data.BaseTime[currentPaletteIndex];
-        nextPaletteTime = Mathf.Infinity;
+
+        // We've passed all transitions - use the last palette
+        interval.CurrentIndex = sequence.Length - 1;
+        interval.PrevIndex = interval.CurrentIndex;
+        interval.NextIndex = interval.CurrentIndex;
+        interval.LastTime = RainCycleLength * sequence.Times[interval.CurrentIndex];
+        interval.NextTime = Mathf.Infinity;
+        interval.BlendFactor = 1f;
+        interval.IsLastPalette = true;
+
+        return interval;
     }
 
-
-    public static void CalculatePaletteEffectIntervals(float timeNow, PaletteData data, ref int currentPaletteIndex, ref float lastPaletteTime, ref float nextPaletteTime)
+    /// <summary>
+    /// Helper method to get a palette sequence from PaletteData
+    /// </summary>
+    public static PaletteSequence<int> GetBasePaletteSequence(PaletteData data)
     {
-        for (int i = 1; i < data.EffectALength; i++)
-        {
-            float endTimePalette = data.EffectATime[i] * RainCycleLength;
-            if (timeNow < endTimePalette)
-            {
-                currentPaletteIndex = i - 1;
-                lastPaletteTime = data.EffectATime[currentPaletteIndex] * RainCycleLength;
-                nextPaletteTime = endTimePalette;
-                return;
-            }
-        }
-        currentPaletteIndex = data.EffectAPalette.Count - 1;
-        lastPaletteTime = RainCycleLength * data.EffectATime[currentPaletteIndex];
-        nextPaletteTime = Mathf.Infinity;
+        return new PaletteSequence<int>(data.BasePalette, data.BaseTime);
     }
 
+    public static PaletteSequence<int> GetEffectAPaletteSequence(PaletteData data)
+    {
+        return new PaletteSequence<int>(data.EffectAPalette, data.EffectATime);
+    }
+
+    public static PaletteSequence<int> GetEffectBPaletteSequence(PaletteData data)
+    {
+        return new PaletteSequence<int>(data.EffectBPalette, data.EffectBTime);
+    }
+
+    public static PaletteSequence<string> GetTerrainPaletteSequence(PaletteData data)
+    {
+        return new PaletteSequence<string>(data.TerrainPalette, data.TerrainTime);
+    }
 }
