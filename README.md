@@ -16,7 +16,7 @@ YourMod/
 
 ## TO DO
 
-- [ ] Add efect colot set up, with custom color and transitions
+- [ ] More Custom transitions
 - [ ] Add tags for different systems of transitions
 - [ ] New file sistem to modularize cycles longers
 - [ ] Input Cycles mod random option (IAHunter thing that i will done into a future)
@@ -38,3 +38,4 @@ YourMod/
 - [x] Percent of transition palette
 - [x] Set last palette in case of no rain
 - [x] Add custom mod compatibility
+- [x] Custom effect colors and transitions

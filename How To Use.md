@@ -1,6 +1,6 @@
 # How to Use Rain States
 
-> **Version:** 0.2.5 | **Last Updated:** November 2025
+> **Version:** 0.3 | **Last Updated:** November 2025
 
 This tutorial will show you how to use Rain States in your mod. It assumes you have already added the mod as a **required dependency**.
 
