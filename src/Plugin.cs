@@ -16,7 +16,7 @@ public partial class Plugin : BaseUnityPlugin
 {
     public const string ID = "skeq.rainstates";
     public const string NAME = "Rain States";
-    public const string VER = "0.2.5";
+    public const string VER = "0.3";
 
     private void OnDisable()
     {
