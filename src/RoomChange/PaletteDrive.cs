@@ -11,6 +11,8 @@ public partial class PaletteDrive
     private static float actualTime;
     private static bool DEBUG = true;
 
+    public static bool activateEffectFade = false;
+
     public static void Terminate()
     {
         On.RoomCamera.UpdateDayNightPalette -= UpdateRainStatePaletteRoom;
@@ -52,36 +54,43 @@ public partial class PaletteDrive
 
         activeRegionPalette = PaletteInfo.Palettes[roomKey];
         actualTime = self.room.world.rainCycle.timer;
+        activateEffectFade = false;
 
         // Get the main camera (only apply to first player camera)
         // TODO: Will this be compatible with split screen? Handle later
         RoomCamera camera = self.room.game.cameras[0];
 
-        // Apply base palette (required)
-        ApplyBasePalette(camera, activeRegionPalette, actualTime);
-
-        PDEBUG.Log("Applied Base Palette.");
+        if (activeRegionPalette.BaseLength > 0)
+        {
+            ApplyBasePalette(camera, activeRegionPalette, actualTime);
+            PDEBUG.Log("Applied Base Palette.");
+        }
 
         // Apply effect palettes if available
         if (activeRegionPalette.EffectALength > 0)
         {
             ApplyEffectAPalette(camera, activeRegionPalette, actualTime);
+            PDEBUG.Log("Applied Effect A Palette.");
         }
 
-        PDEBUG.Log("Applied Effect A Palette.");
 
         if (activeRegionPalette.EffectBLength > 0)
         {
             ApplyEffectBPalette(camera, activeRegionPalette, actualTime);
+            PDEBUG.Log("Applied Effect B Palette.");
         }
-
-        PDEBUG.Log("Applied Effect B Palette.");
 
         // TODO: Add terrain palette support
         // if (activeRegionPalette.TerrainLength > 0)
         // {
         //     ApplyTerrainPalette(camera, activeRegionPalette, actualTime);
         // }
+
+
+        if (activateEffectFade)
+        {
+            camera.ApplyFade();
+        }
 
         // Custom Debug
         if (self.room.game.devToolsActive && DEBUG)
@@ -132,7 +141,7 @@ public partial class PaletteDrive
 
         if (DEBUG)
         {
-            PDEBUG.Log($"Applying Effect A Palette: index {interval.PrevIndex} (palette {sequence.Palettes[interval.PrevIndex]}) | blend: {interval.BlendFactor:F2}");
+            PDEBUG.Log($"Applying Effect A Palette: index {interval.PrevIndex} (palette {sequence.Palettes[interval.PrevIndex]}) and palette {sequence.Palettes[interval.NextIndex]} | blend: {interval.BlendFactor:F2}");
         }
     }
 
@@ -156,7 +165,7 @@ public partial class PaletteDrive
 
         if (DEBUG)
         {
-            PDEBUG.Log($"Applying Effect B Palette: [{interval.PrevIndex}] -> [{interval.NextIndex}] | blend: {interval.BlendFactor:F2}");
+            PDEBUG.Log($"Applying Effect B Palette: index {interval.PrevIndex} (palette {sequence.Palettes[interval.PrevIndex]}) and palette {sequence.Palettes[interval.NextIndex]} | blend: {interval.BlendFactor:F2}");
         }
     }
 
@@ -240,12 +249,13 @@ public static class PaintRoom
     /// </summary>
     public static void ChangeEffectAPalette(RoomCamera camera, string prevColorHex, string nextColorHex, float blendFactor)
     {
-        Texture2D texture = camera.fadeTexA;
-        
+        Texture2D textureA = camera.fadeTexA;
+        Texture2D textureB = camera.fadeTexB;
+
         // Parse hex colors
         Color prevColor = HexToColor(prevColorHex);
         Color nextColor = HexToColor(nextColorHex);
-        
+
         // Blend between the two colors
         Color blendedColor = Color.Lerp(prevColor, nextColor, blendFactor);
 
@@ -260,12 +270,13 @@ public static class PaintRoom
         {
             PDEBUG.Log($"Effect A: Blending [{prevColorHex}] -> [{nextColorHex}] at {blendFactor:F2} = RGB({blendedColor.r * 255:F0}, {blendedColor.g * 255:F0}, {blendedColor.b * 255:F0})");
         }
-        
-        // Apply the effect colors to the fade texture (effect color is a 2x2 block)
-        texture.SetPixels(30, 4, 2, 2, effectColors, 0);
-        texture.SetPixels(30, 12, 2, 2, effectColors, 0);
 
-        camera.ApplyFade();
+        // Apply the effect colors to the fade texture (effect color is a 2x2 block)
+        textureA.SetPixels(30, 4, 2, 2, effectColors, 0);
+        textureA.SetPixels(30, 12, 2, 2, effectColors, 0);
+        textureB.SetPixels(30, 4, 2, 2, effectColors, 0);
+        textureB.SetPixels(30, 12, 2, 2, effectColors, 0);
+        PaletteDrive.activateEffectFade = true;
     }
 
     /// <summary>
@@ -273,7 +284,8 @@ public static class PaintRoom
     /// </summary>
     public static void ChangeEffectBPalette(RoomCamera camera, string prevColorHex, string nextColorHex, float blendFactor)
     {
-        Texture2D texture = camera.fadeTexB;
+        Texture2D textureA = camera.fadeTexA;
+        Texture2D textureB = camera.fadeTexB;
         
         // Parse hex colors
         Color prevColor = HexToColor(prevColorHex);
@@ -295,10 +307,12 @@ public static class PaintRoom
         }
         
         // Apply the effect colors to the fade texture
-        texture.SetPixels(30, 2, 2, 2, effectColors, 0);
-        texture.SetPixels(30, 10, 2, 2, effectColors, 0);
+        textureA.SetPixels(30, 2, 2, 2, effectColors, 0);
+        textureA.SetPixels(30, 10, 2, 2, effectColors, 0);
+        textureB.SetPixels(30, 2, 2, 2, effectColors, 0);
+        textureB.SetPixels(30, 10, 2, 2, effectColors, 0);
 
-        camera.ApplyFade();
+        PaletteDrive.activateEffectFade = true;
     }
 
     /// <summary>
