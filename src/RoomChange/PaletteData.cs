@@ -76,7 +76,13 @@ public struct PaletteInterval
 
 public static class PaletteInfo
 {
+    // Old system (for compatibility)
     public static Dictionary<string, RoomChange.PaletteData> Palettes = new Dictionary<string, RoomChange.PaletteData>();
+
+    // New cycle configuration system
+    // Key: Region name or full room name
+    // Value: List of PaletteData indexed by file ID (01, 02, 03, etc.)
+    public static Dictionary<string, List<PaletteData>> CycleConfigurations = new Dictionary<string, List<PaletteData>>();
 
     private static int RainCycleLength;
 
@@ -182,5 +188,55 @@ public static class PaletteInfo
     public static PaletteSequence<string> GetTerrainPaletteSequence(PaletteData data)
     {
         return new PaletteSequence<string>(data.TerrainPalette, data.TerrainTime);
+    }
+
+    // ============================================
+    // Methods for the cycle configuration system
+    // ============================================
+
+    /// <summary>
+    /// Gets a palette for a specific region or room by cycle index
+    /// </summary>
+    public static PaletteData GetCyclePalette(string key, int cycleIndex)
+    {
+        if (CycleConfigurations.TryGetValue(key, out var configs))
+        {
+            if (cycleIndex < 0)
+            {
+                //Yield Error?????
+                cycleIndex = 0;
+                PDEBUG.Log($"Invalid cycle index {cycleIndex} for key {key}.");
+            }
+
+            cycleIndex = cycleIndex % configs.Count;
+
+            if (configs[cycleIndex] != null)
+            {
+                return configs[cycleIndex];
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Gets the total number of configured cycles for a region/room
+    /// </summary>
+    public static int GetCycleCount(string key)
+    {
+        if (CycleConfigurations.TryGetValue(key, out var configs))
+        {
+            return configs.Count;
+        }
+
+        return 0;
+    }
+
+    /// <summary>
+    /// Clears all cycle configuration data
+    /// </summary>
+    public static void CleanupCycleConfigurations()
+    {
+        CycleConfigurations.Clear();
     }
 }

@@ -22,6 +22,7 @@ public partial class Plugin : BaseUnityPlugin
     {
         JsonGet.PaletteManager.Cleanup();
     }
+
     private void OnEnable()
     {
         On.RainWorld.OnModsInit += RainWorldOnOnModsInit;
@@ -40,9 +41,9 @@ public partial class Plugin : BaseUnityPlugin
     private void RainWorld_PostModsInit(On.RainWorld.orig_PostModsInit orig, RainWorld self)
     {
         orig(self);
-        JsonGet.PaletteManager.LoadPalettes();
+        JsonGet.CycleStateManager.LoadCycleStates();
+        JsonGet.PaletteManager.LoadPalettes(); // Fast or dev mode, more priority
         Logger.LogInfo($"[{NAME}] {VER} Json loaded successfully!");
-        
     }
 
 
