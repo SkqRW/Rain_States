@@ -9,7 +9,7 @@ public partial class PaletteDrive
 {
     private static RoomChange.PaletteData activeRegionPalette;
     private static float actualTime;
-    private static bool DEBUG = true;
+    private static bool DEBUG = false;
 
     public static bool activateEffectFade = false;
 
@@ -30,7 +30,7 @@ public partial class PaletteDrive
     /// <param name="self"></param>
     private static void UpdateRainStatePaletteRoom(On.RoomCamera.orig_UpdateDayNightPalette orig, RoomCamera self)
     {
-        if (self == null || self.room == null)
+        if (self == null || self.room == null || self.game.GetStorySession == null)
         {
             orig(self);
             return;
@@ -51,8 +51,9 @@ public partial class PaletteDrive
         // Not sure if camera changes during gameplay (probably with dev tools though)
         // But I'm going to put this update here 
         PaletteInfo.SetRainCycleLength(self.room.world.rainCycle.cycleLength);
+        //PDEBUG.Log($"Rain Cycle Length set to {self.room.world.rainCycle.cycleLength} || {self.game.GetStorySession.saveState.cycleNumber}.");
 
-        activeRegionPalette = PaletteInfo.Palettes[roomKey];
+        activeRegionPalette = PaletteInfo.GetCyclePalette(roomKey, self.game.GetStorySession.saveState.cycleNumber);
         actualTime = self.room.world.rainCycle.timer;
         activateEffectFade = false;
 
@@ -63,21 +64,21 @@ public partial class PaletteDrive
         if (activeRegionPalette.BaseLength > 0)
         {
             ApplyBasePalette(camera, activeRegionPalette, actualTime);
-            PDEBUG.Log("Applied Base Palette.");
+            //PDEBUG.Log("Applied Base Palette.");
         }
 
         // Apply effect palettes if available
         if (activeRegionPalette.EffectALength > 0)
         {
             ApplyEffectAPalette(camera, activeRegionPalette, actualTime);
-            PDEBUG.Log("Applied Effect A Palette.");
+            //PDEBUG.Log("Applied Effect A Palette.");
         }
 
 
         if (activeRegionPalette.EffectBLength > 0)
         {
             ApplyEffectBPalette(camera, activeRegionPalette, actualTime);
-            PDEBUG.Log("Applied Effect B Palette.");
+            //PDEBUG.Log("Applied Effect B Palette.");
         }
 
         // TODO: Add terrain palette support
@@ -141,7 +142,7 @@ public partial class PaletteDrive
 
         if (DEBUG)
         {
-            PDEBUG.Log($"Applying Effect A Palette: index {interval.PrevIndex} (palette {sequence.Palettes[interval.PrevIndex]}) and palette {sequence.Palettes[interval.NextIndex]} | blend: {interval.BlendFactor:F2}");
+            //PDEBUG.Log($"Applying Effect A Palette: index {interval.PrevIndex} (palette {sequence.Palettes[interval.PrevIndex]}) and palette {sequence.Palettes[interval.NextIndex]} | blend: {interval.BlendFactor:F2}");
         }
     }
 

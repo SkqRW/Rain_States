@@ -93,36 +93,51 @@ public static class PaletteInfo
 
     public static bool IsRegionPaletteAvailable(Room self, ref string room)
     {
-        if (PaletteInfo.Palettes == null)
-        {
-            PDEBUG.Log("Palettes not loaded yet.");
-            return false;
-        }
         Region region = self.world.region;
-        bool isSpecificRoom = false;
 
-        // Check for specific room configuration
-        if (PaletteInfo.Palettes.ContainsKey(self.abstractRoom.name))
+        // Priority 1: Check CycleConfigurations for specific room
+        if (CycleConfigurations.ContainsKey(self.abstractRoom.name))
         {
-            isSpecificRoom = true;
+            room = self.abstractRoom.name;
+            return true;
         }
 
-        // Check for region configuration
-        if (!isSpecificRoom && !PaletteInfo.Palettes.ContainsKey(region.name))
+        // Priority 2: Check CycleConfigurations for region
+        if (CycleConfigurations.ContainsKey(region.name))
         {
-            PDEBUG.Log($"NOT FOUND | No palettes found for region: {region.name}");
-            return false;
+            room = region.name;
+            return true;
         }
 
-        room = isSpecificRoom ? self.abstractRoom.name : region.name;
-
-        if (Palettes[room].BasePalette == null || Palettes[room].BasePalette.Count == 0)
+        // Priority 3: Check legacy Palettes system for specific room
+        if (Palettes != null && Palettes.ContainsKey(self.abstractRoom.name))
         {
-            PDEBUG.Log($"Palette not found for {room}");
-            return false;
+            room = self.abstractRoom.name;
+            
+            if (Palettes[room].BasePalette == null || Palettes[room].BasePalette.Count == 0)
+            {
+                PDEBUG.Log($"Palette not found for {room}");
+                return false;
+            }
+            return true;
         }
 
-        return true;
+        // Priority 4: Check legacy Palettes system for region
+        if (Palettes != null && Palettes.ContainsKey(region.name))
+        {
+            room = region.name;
+            
+            if (Palettes[room].BasePalette == null || Palettes[room].BasePalette.Count == 0)
+            {
+                PDEBUG.Log($"Palette not found for {room}");
+                return false;
+            }
+            return true;
+        }
+
+        // No configuration found
+        PDEBUG.Log($"NOT FOUND | No palettes found for region: {region.name}");
+        return false;
     }
 
     /// <summary>
@@ -213,6 +228,12 @@ public static class PaletteInfo
             if (configs[cycleIndex] != null)
             {
                 return configs[cycleIndex];
+            }
+        }else{
+            Palettes.TryGetValue(key, out var hotPalette);
+            if (hotPalette != null)
+            {
+                return hotPalette;
             }
         }
 
